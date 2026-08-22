@@ -157,10 +157,22 @@ function renderSavedTreksList() {
     `).join('');
 }
 
-function toggleSavedTreksPopover() {
+function toggleSavedTreksPopover(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     const popover = document.getElementById('savedTreksPopover');
     const btn = document.getElementById('savedTreksBtn');
     if (!popover) return;
+
+    // Close chatbot popover if open
+    const chatbotPopover = document.getElementById('chatbotPopover');
+    const chatbotBtn = document.getElementById('trekChatbotBtn');
+    if (chatbotPopover && chatbotPopover.classList.contains('show')) {
+        chatbotPopover.classList.remove('show');
+        if (chatbotBtn) chatbotBtn.classList.remove('active');
+    }
 
     // Close checklist popover if open
     const checklistPopover = document.getElementById('checklistPopover');
@@ -631,10 +643,22 @@ function closeTrekModal() {
 /* ==========================================
    Profile Dropdown Toggle
    ========================================== */
-function toggleProfileMenu() {
+function toggleProfileMenu(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     const menu = document.getElementById('profilePopoverMenu');
     const btn = document.getElementById('profileDropdownBtn');
     if (!menu) return;
+
+    // Close chatbot popover if open
+    const chatbotPopover = document.getElementById('chatbotPopover');
+    const chatbotBtn = document.getElementById('trekChatbotBtn');
+    if (chatbotPopover && chatbotPopover.classList.contains('show')) {
+        chatbotPopover.classList.remove('show');
+        if (chatbotBtn) chatbotBtn.classList.remove('active');
+    }
 
     // Close checklist popover if open
     const checklistPopover = document.getElementById('checklistPopover');
@@ -1157,7 +1181,10 @@ async function sendChatbotMessage(event) {
 }
 
 function toggleChecklistPopover(event) {
-    if (event) event.stopPropagation();
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     const popover = document.getElementById('checklistPopover');
     const btn = document.getElementById('trekChecklistBtn');
     if (!popover) return;
@@ -1196,13 +1223,18 @@ function toggleChecklistPopover(event) {
     }
 }
 
-// Close popovers when clicking outside
+// Close popovers when clicking outside (safe for mobile bottom nav)
 document.addEventListener('click', (e) => {
+    // If click was inside mobile bottom nav or drawer headers, do not close
+    if (e.target.closest('#mobileBottomNav') || e.target.closest('.mobile-bottom-nav')) {
+        return;
+    }
+
     // Chatbot Popover
     const chatbotPopover = document.getElementById('chatbotPopover');
     const chatbotBtn = document.getElementById('trekChatbotBtn');
     if (chatbotPopover && chatbotPopover.classList.contains('show')) {
-        if (!e.target.closest('.chatbot-dropdown-container')) {
+        if (!chatbotPopover.contains(e.target) && !chatbotBtn?.contains(e.target)) {
             chatbotPopover.classList.remove('show');
             if (chatbotBtn) chatbotBtn.classList.remove('active');
         }
@@ -1212,7 +1244,7 @@ document.addEventListener('click', (e) => {
     const checklistPopover = document.getElementById('checklistPopover');
     const checklistBtn = document.getElementById('trekChecklistBtn');
     if (checklistPopover && checklistPopover.classList.contains('show')) {
-        if (!e.target.closest('.checklist-dropdown-container')) {
+        if (!checklistPopover.contains(e.target) && !checklistBtn?.contains(e.target)) {
             checklistPopover.classList.remove('show');
             if (checklistBtn) checklistBtn.classList.remove('active');
         }
@@ -1222,7 +1254,7 @@ document.addEventListener('click', (e) => {
     const profileMenu = document.getElementById('profilePopoverMenu');
     const profileBtn = document.getElementById('profileDropdownBtn');
     if (profileMenu && profileMenu.classList.contains('show')) {
-        if (!e.target.closest('.profile-dropdown-container')) {
+        if (!profileMenu.contains(e.target) && !profileBtn?.contains(e.target)) {
             profileMenu.classList.remove('show');
             if (profileBtn) profileBtn.classList.remove('active');
         }
@@ -1232,7 +1264,7 @@ document.addEventListener('click', (e) => {
     const savedPopover = document.getElementById('savedTreksPopover');
     const savedBtn = document.getElementById('savedTreksBtn');
     if (savedPopover && savedPopover.classList.contains('show')) {
-        if (!e.target.closest('.saved-treks-dropdown-container')) {
+        if (!savedPopover.contains(e.target) && !savedBtn?.contains(e.target)) {
             savedPopover.classList.remove('show');
             if (savedBtn) savedBtn.classList.remove('active');
         }

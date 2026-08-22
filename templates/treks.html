@@ -34,206 +34,24 @@
             </div>
 
             <div class="nav-auth-actions">
-                <!-- AI TREK GUIDE CHATBOT (To the left of Checklist button) -->
-                <div class="chatbot-dropdown-container">
-                    <button type="button" class="btn-nav-chatbot" id="trekChatbotBtn" onclick="toggleChatbotPopover(event)" title="AI Trek Assistant - Sherpa AI">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </button>
+                <!-- Desktop Triggers -->
+                <button type="button" class="btn-nav-chatbot" id="trekChatbotBtn" onclick="toggleChatbotPopover(event)" title="AI Trek Assistant - Sherpa AI">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
 
-                    <!-- Chatbot Popover Window -->
-                    <div class="chatbot-popover" id="chatbotPopover">
-                        <div class="chatbot-popover-header">
-                            <div class="chatbot-header-info">
-                                <div class="chatbot-avatar-pulse">
-                                    <i class="fa-solid fa-robot"></i>
-                                    <span class="pulse-ring"></span>
-                                </div>
-                                <div class="chatbot-header-text">
-                                    <div class="chatbot-title-row">
-                                        <strong class="chatbot-title-name">Sherpa AI</strong>
-                                        <span class="chatbot-guide-badge">TREK GUIDE</span>
-                                    </div>
-                                    <span class="chatbot-status"><span class="status-dot"></span> Online | Smart Assistant</span>
-                                </div>
-                            </div>
-                            <div class="chatbot-header-actions">
-                                <button type="button" class="btn-clear-chat" onclick="clearChatbotHistory(event)" title="Clear Chat History">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                                <button type="button" class="btn-close-chatbot" onclick="toggleChatbotPopover(event)" title="Close Chat">&times;</button>
-                            </div>
-                        </div>
+                <button type="button" class="btn-nav-checklist" id="trekChecklistBtn" onclick="toggleChecklistPopover(event)" title="Trek Packing Checklist & Essentials">
+                    <i class="fa-solid fa-list-check"></i>
+                </button>
 
-                        <!-- Chat Messages Body -->
-                        <div class="chatbot-messages-body" id="chatbotMessagesBody"></div>
-
-                        <!-- Quick Suggestion Chips -->
-                        <div class="chatbot-suggestions-wrap" id="chatbotSuggestionsWrap">
-                            <div class="suggestions-chips-scroll">
-                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Compare Kedarkantha vs Brahmatal', event)">
-                                    ⚖️ Compare Treks
-                                </button>
-                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Best beginner treks under ₹10,000?', event)">
-                                    🏔️ Beginner Treks
-                                </button>
-                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('How to prevent Acute Mountain Sickness (AMS)?', event)">
-                                    💊 AMS Safety
-                                </button>
-                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('What are the best winter snow treks?', event)">
-                                    ❄️ Snow Treks
-                                </button>
-                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('What essential gear should I pack?', event)">
-                                    🎒 Packing Tips
-                                </button>
-                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Recommend high pass crossover treks', event)">
-                                    ⚡ High Passes
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Chat Input Bar -->
-                        <div class="chatbot-input-row">
-                            <input type="text" id="chatbotInput" placeholder="Ask Sherpa AI anything about treks..." autocomplete="off" onkeydown="if(event.key==='Enter') sendChatbotMessage(event)">
-                            <button type="button" class="btn-chatbot-send" id="chatbotSendBtn" onclick="sendChatbotMessage(event)" title="Send message">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TREK PACKING CHECKLIST BUTTON (To the left of Saved button) -->
-                <div class="checklist-dropdown-container">
-                    <button type="button" class="btn-nav-checklist" id="trekChecklistBtn" onclick="toggleChecklistPopover()" title="Trek Packing Checklist & Essentials">
-                        <i class="fa-solid fa-list-check"></i>
-                    </button>
-
-                    <!-- Checklist Popover Dropdown -->
-                    <div class="checklist-popover" id="checklistPopover">
-                        <div class="checklist-popover-header">
-                            <div class="checklist-popover-title">
-                                <i class="fa-solid fa-clipboard-check checklist-icon-emerald"></i>
-                                <div>
-                                    <strong class="checklist-title-text">Trek Essentials Checklist</strong>
-                                    <span class="checklist-title-sub">Packing checklist for high-altitude treks</span>
-                                </div>
-                            </div>
-                            <button type="button" class="btn-close-checklist-popover" onclick="toggleChecklistPopover()" title="Close">&times;</button>
-                        </div>
-
-                        <!-- Progress Overview Bar -->
-                        <div class="checklist-progress-bar-wrap">
-                            <div class="checklist-progress-stats">
-                                <span id="checklistProgressText"><i class="fa-solid fa-box-open"></i> Packed: <strong>0</strong> of <strong>18</strong></span>
-                                <span class="checklist-progress-pct" id="checklistProgressPct">0%</span>
-                            </div>
-                            <div class="checklist-progress-track">
-                                <div class="checklist-progress-fill" id="checklistProgressFill" style="width: 0%;"></div>
-                            </div>
-                        </div>
-
-                        <!-- Category Tabs -->
-                        <div class="checklist-tabs">
-                            <button type="button" class="checklist-tab active" onclick="filterChecklistCategory('all', this, event)">
-                                <i class="fa-solid fa-layer-group"></i> All (<span id="count-tab-all">18</span>)
-                            </button>
-                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('gear', this, event)">
-                                <i class="fa-solid fa-mountain"></i> Gear
-                            </button>
-                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('clothing', this, event)">
-                                <i class="fa-solid fa-shirt"></i> Clothing
-                            </button>
-                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('medical', this, event)">
-                                <i class="fa-solid fa-kit-medical"></i> Medical
-                            </button>
-                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('essentials', this, event)">
-                                <i class="fa-solid fa-compass"></i> Docs & Tools
-                            </button>
-                        </div>
-
-                        <!-- Checklist Items List -->
-                        <div class="checklist-items-scroll" id="checklistItemsList">
-                            <!-- Populated dynamically via JS -->
-                        </div>
-
-                        <!-- Quick Add Custom Item Form -->
-                        <div class="checklist-add-row">
-                            <input type="text" id="customChecklistInput" placeholder="Add custom item (e.g. GoPro, Power bank)..." maxlength="50" onkeydown="if(event.key==='Enter') addCustomChecklistItem(event)">
-                            <button type="button" class="btn-add-checklist-item" onclick="addCustomChecklistItem(event)" title="Add Item">
-                                <i class="fa-solid fa-plus"></i> Add
-                            </button>
-                        </div>
-
-                        <!-- Footer Actions -->
-                        <div class="checklist-popover-footer">
-                            <div style="display: flex; gap: 8px;">
-                                <button type="button" class="btn-checklist-secondary" onclick="checkAllChecklistItems(event)">
-                                    <i class="fa-solid fa-check-double"></i> Check All
-                                </button>
-                                <button type="button" class="btn-checklist-secondary" onclick="resetChecklistItems(event)">
-                                    <i class="fa-solid fa-rotate-left"></i> Uncheck
-                                </button>
-                            </div>
-                            <button type="button" class="btn-checklist-secondary" onclick="restoreDefaultChecklistItems(event)" title="Restore default essentials list">
-                                <i class="fa-solid fa-arrow-rotate-right"></i> Restore Defaults
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SAVED TREKS HEART BUTTON (To the left of Profile) -->
-                <div class="saved-treks-dropdown-container">
-                    <button type="button" class="btn-nav-heart" id="savedTreksBtn" onclick="toggleSavedTreksPopover()" title="Saved Treks / Wishlist">
-                        <i class="fa-solid fa-heart"></i>
-                        <span class="saved-badge-count" id="savedTreksBadge">0</span>
-                    </button>
-
-                    <!-- Saved Treks Popover Dropdown -->
-                    <div class="saved-treks-popover" id="savedTreksPopover">
-                        <div class="saved-popover-header">
-                            <div class="saved-popover-title">
-                                <i class="fa-solid fa-heart heart-icon-rose"></i>
-                                <span>Saved Treks</span>
-                                <span class="saved-popover-pill" id="savedPopoverCount">0</span>
-                            </div>
-                            <button type="button" class="btn-close-saved-popover" onclick="toggleSavedTreksPopover()" title="Close">&times;</button>
-                        </div>
-
-                        <div class="saved-popover-scroll" id="savedTreksList">
-                            <!-- Populated dynamically via JS -->
-                        </div>
-
-                        <div class="saved-popover-footer" id="savedPopoverFooter" style="display: none;">
-                            <button type="button" class="btn-clear-all-saved" onclick="clearAllSavedTreks()">
-                                <i class="fa-regular fa-trash-can"></i> Clear All Saved
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <button type="button" class="btn-nav-heart" id="savedTreksBtn" onclick="toggleSavedTreksPopover(event)" title="Saved Treks / Wishlist">
+                    <i class="fa-solid fa-heart"></i>
+                    <span class="saved-badge-count" id="savedTreksBadge">0</span>
+                </button>
 
                 {% if user %}
-                    <!-- User Profile Option (Replaces Register button when logged in) -->
-                    <div class="profile-dropdown-container">
-                        <button type="button" class="btn-profile-circle" id="profileDropdownBtn" onclick="toggleProfileMenu()" title="{{ user.name }} - Account Profile">
-                            <span class="user-avatar-circle">{{ user.name[:1].upper() }}</span>
-                        </button>
-
-                        <div class="profile-popover-menu" id="profilePopoverMenu">
-                            <div class="popover-user-info">
-                                <div class="popover-avatar">{{ user.name[:2].upper() }}</div>
-                                <div class="popover-details">
-                                    <strong class="popover-name">{{ user.name }}</strong>
-                                    <span class="popover-email">{{ user.email }}</span>
-                                </div>
-                            </div>
-                            <div class="popover-divider"></div>
-                            <a href="{{ url_for('dashboard') }}" class="popover-item">
-                                <i class="fa-solid fa-id-card"></i> My Dashboard
-                            </a>
-                            <a href="{{ url_for('logout') }}" class="popover-item popover-danger">
-                                <i class="fa-solid fa-right-from-bracket"></i> Log Out
-                            </a>
-                        </div>
-                    </div>
+                    <button type="button" class="btn-profile-circle" id="profileDropdownBtn" onclick="toggleProfileMenu(event)" title="{{ user.name }} - Account Profile">
+                        <span class="user-avatar-circle">{{ user.name[:1].upper() }}</span>
+                    </button>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="btn-nav-ghost">Log In</a>
                     <a href="{{ url_for('register') }}" class="btn-nav-primary">Register</a>
@@ -546,7 +364,181 @@
                 </div>
             </section>
         </div>
-    </main>
+    <!-- GLOBAL POPOVER MODALS & DRAWERS (Used by both Desktop and Mobile Bottom Navigation) -->
+    
+    <!-- 1. AI SHERPA CHATBOT POPOVER / BOTTOM-SHEET -->
+    <div class="chatbot-popover" id="chatbotPopover">
+        <div class="chatbot-popover-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar-pulse">
+                    <i class="fa-solid fa-robot"></i>
+                    <span class="pulse-ring"></span>
+                </div>
+                <div class="chatbot-header-text">
+                    <div class="chatbot-title-row">
+                        <strong class="chatbot-title-name">Sherpa AI</strong>
+                        <span class="chatbot-guide-badge">TREK GUIDE</span>
+                    </div>
+                    <span class="chatbot-status"><span class="status-dot"></span> Online | Smart Assistant</span>
+                </div>
+            </div>
+            <div class="chatbot-header-actions">
+                <button type="button" class="btn-clear-chat" onclick="clearChatbotHistory(event)" title="Clear Chat History">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button type="button" class="btn-close-chatbot" onclick="toggleChatbotPopover(event)" title="Close Chat">&times;</button>
+            </div>
+        </div>
+
+        <!-- Chat Messages Body -->
+        <div class="chatbot-messages-body" id="chatbotMessagesBody"></div>
+
+        <!-- Quick Suggestion Chips -->
+        <div class="chatbot-suggestions-wrap" id="chatbotSuggestionsWrap">
+            <div class="suggestions-chips-scroll">
+                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Compare Kedarkantha vs Brahmatal', event)">
+                    ⚖️ Compare Treks
+                </button>
+                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Best beginner treks under ₹10,000?', event)">
+                    🏔️ Beginner Treks
+                </button>
+                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('How to prevent Acute Mountain Sickness (AMS)?', event)">
+                    💊 AMS Safety
+                </button>
+                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('What are the best winter snow treks?', event)">
+                    ❄️ Snow Treks
+                </button>
+                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('What essential gear should I pack?', event)">
+                    🎒 Packing Tips
+                </button>
+                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Recommend high pass crossover treks', event)">
+                    ⚡ High Passes
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chatbot-input-row">
+            <input type="text" id="chatbotInput" placeholder="Ask Sherpa AI anything about treks..." autocomplete="off" onkeydown="if(event.key==='Enter') sendChatbotMessage(event)">
+            <button type="button" class="btn-chatbot-send" id="chatbotSendBtn" onclick="sendChatbotMessage(event)" title="Send message">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. TREK PACKING CHECKLIST POPOVER / BOTTOM-SHEET -->
+    <div class="checklist-popover" id="checklistPopover">
+        <div class="checklist-popover-header">
+            <div class="checklist-popover-title">
+                <i class="fa-solid fa-clipboard-check checklist-icon-emerald"></i>
+                <div>
+                    <strong class="checklist-title-text">Trek Essentials Checklist</strong>
+                    <span class="checklist-title-sub">Packing checklist for high-altitude treks</span>
+                </div>
+            </div>
+            <button type="button" class="btn-close-checklist-popover" onclick="toggleChecklistPopover(event)" title="Close">&times;</button>
+        </div>
+
+        <!-- Progress Overview Bar -->
+        <div class="checklist-progress-bar-wrap">
+            <div class="checklist-progress-stats">
+                <span id="checklistProgressText"><i class="fa-solid fa-box-open"></i> Packed: <strong>0</strong> of <strong>18</strong></span>
+                <span class="checklist-progress-pct" id="checklistProgressPct">0%</span>
+            </div>
+            <div class="checklist-progress-track">
+                <div class="checklist-progress-fill" id="checklistProgressFill" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="checklist-tabs">
+            <button type="button" class="checklist-tab active" onclick="filterChecklistCategory('all', this, event)">
+                <i class="fa-solid fa-layer-group"></i> All (<span id="count-tab-all">18</span>)
+            </button>
+            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('gear', this, event)">
+                <i class="fa-solid fa-mountain"></i> Gear
+            </button>
+            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('clothing', this, event)">
+                <i class="fa-solid fa-shirt"></i> Clothing
+            </button>
+            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('medical', this, event)">
+                <i class="fa-solid fa-kit-medical"></i> Medical
+            </button>
+            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('essentials', this, event)">
+                <i class="fa-solid fa-compass"></i> Docs & Tools
+            </button>
+        </div>
+
+        <!-- Checklist Items List -->
+        <div class="checklist-items-scroll" id="checklistItemsList">
+            <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Quick Add Custom Item Form -->
+        <div class="checklist-add-row">
+            <input type="text" id="customChecklistInput" placeholder="Add custom item (e.g. GoPro, Power bank)..." maxlength="50" onkeydown="if(event.key==='Enter') addCustomChecklistItem(event)">
+            <button type="button" class="btn-add-checklist-item" onclick="addCustomChecklistItem(event)" title="Add Item">
+                <i class="fa-solid fa-plus"></i> Add
+            </button>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="checklist-popover-footer">
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-checklist-secondary" onclick="checkAllChecklistItems(event)">
+                    <i class="fa-solid fa-check-double"></i> Check All
+                </button>
+                <button type="button" class="btn-checklist-secondary" onclick="resetChecklistItems(event)">
+                    <i class="fa-solid fa-rotate-left"></i> Uncheck
+                </button>
+            </div>
+            <button type="button" class="btn-checklist-secondary" onclick="restoreDefaultChecklistItems(event)" title="Restore default essentials list">
+                <i class="fa-solid fa-arrow-rotate-right"></i> Restore Defaults
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. SAVED TREKS / WISHLIST POPOVER / BOTTOM-SHEET -->
+    <div class="saved-treks-popover" id="savedTreksPopover">
+        <div class="saved-popover-header">
+            <div class="saved-popover-title">
+                <i class="fa-solid fa-heart heart-icon-rose"></i>
+                <span>Saved Treks</span>
+                <span class="saved-popover-pill" id="savedPopoverCount">0</span>
+            </div>
+            <button type="button" class="btn-close-saved-popover" onclick="toggleSavedTreksPopover(event)" title="Close">&times;</button>
+        </div>
+
+        <div class="saved-popover-scroll" id="savedTreksList">
+            <!-- Populated dynamically via JS -->
+        </div>
+
+        <div class="saved-popover-footer" id="savedPopoverFooter" style="display: none;">
+            <button type="button" class="btn-clear-all-saved" onclick="clearAllSavedTreks()">
+                <i class="fa-regular fa-trash-can"></i> Clear All Saved
+            </button>
+        </div>
+    </div>
+
+    {% if user %}
+    <!-- 4. USER PROFILE POPOVER MENU -->
+    <div class="profile-popover-menu" id="profilePopoverMenu">
+        <div class="popover-user-info">
+            <div class="popover-avatar">{{ user.name[:2].upper() }}</div>
+            <div class="popover-details">
+                <strong class="popover-name">{{ user.name }}</strong>
+                <span class="popover-email">{{ user.email }}</span>
+            </div>
+        </div>
+        <div class="popover-divider"></div>
+        <a href="{{ url_for('dashboard') }}" class="popover-item">
+            <i class="fa-solid fa-id-card"></i> My Dashboard
+        </a>
+        <a href="{{ url_for('logout') }}" class="popover-item popover-danger">
+            <i class="fa-solid fa-right-from-bracket"></i> Log Out
+        </a>
+    </div>
+    {% endif %}
 
     <!-- Mobile App-Style Bottom Navigation Bar (Visible only on mobile screens <= 768px) -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
