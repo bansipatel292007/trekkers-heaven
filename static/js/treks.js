@@ -336,6 +336,49 @@ function filterBySeason(seasonName) {
     }
 }
 
+function syncMobileSearch(val) {
+    const desktopInput = document.getElementById('searchFilter');
+    if (desktopInput) {
+        desktopInput.value = val;
+    }
+    applyFilters();
+}
+
+function filterByRegion(region, element) {
+    const regionSelect = document.getElementById('regionFilter');
+    if (regionSelect) {
+        regionSelect.value = region === 'all' ? 'all' : region;
+    }
+    
+    // Update active mobile story item
+    if (element) {
+        document.querySelectorAll('.mobile-story-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
+    
+    applyFilters();
+}
+
+function filterByDifficultyQuick(diff, element) {
+    const diffSelect = document.getElementById('difficultyFilter');
+    if (diffSelect) {
+        diffSelect.value = diff;
+    }
+    
+    if (element) {
+        document.querySelectorAll('.mobile-diff-chip').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
+    
+    applyFilters();
+}
+
+function toggleMobileFilterDrawer() {
+    const sidebar = document.getElementById('sidebarFilters');
+    if (!sidebar) return;
+    sidebar.classList.toggle('mobile-drawer-open');
+}
+
 function resetAllFilters() {
     const searchFilter = document.getElementById('searchFilter');
     const monthFilter = document.getElementById('monthFilter');
@@ -352,6 +395,16 @@ function resetAllFilters() {
     if (durationFilter) durationFilter.value = 'all';
     if (seasonFilter) seasonFilter.value = 'all';
     if (sortSelector) sortSelector.value = 'featured';
+
+    // Reset mobile search & chips
+    const mobSearch = document.getElementById('mobileSearchInput');
+    if (mobSearch) mobSearch.value = '';
+    document.querySelectorAll('.mobile-story-item').forEach((el, idx) => {
+        el.classList.toggle('active', idx === 0);
+    });
+    document.querySelectorAll('.mobile-diff-chip').forEach((el, idx) => {
+        el.classList.toggle('active', idx === 0);
+    });
 
     applyFilters();
 }
