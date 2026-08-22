@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trekker Profile & Dashboard - Trekkers Heaven</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treks.css') }}">
+</head>
+<body class="dark-theme">
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ category }} show" id="flash-toast-{{ loop.index }}">
+                        <div class="toast-icon">
+                            {% if category == 'success' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info"></i>
+                            {% endif %}
+                        </div>
+                        <div class="toast-text">{{ message }}</div>
+                        <button class="toast-close" onclick="const t = this.parentElement; t.style.opacity='0'; t.style.transform='translateY(-10px)'; setTimeout(()=>t.remove(), 200);">&times;</button>
+                        <script>
+                            setTimeout(() => {
+                                const t = document.getElementById('flash-toast-{{ loop.index }}');
+                                if (t) {
+                                    t.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                                    t.style.opacity = '0';
+                                    t.style.transform = 'translateY(-10px)';
+                                    setTimeout(() => t.remove(), 250);
+                                }
+                            }, 3000);
+                        </script>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Dashboard Section -->
+    <main class="explorer-container" style="padding-top: 32px; padding-bottom: 80px;">
+        <div class="dashboard-two-col-layout" style="display: grid; grid-template-columns: 290px 1fr; gap: 24px; align-items: start; margin: 0;">
+            
+            <!-- LEFT SIDEBAR CARD -->
+            <aside class="dashboard-sidebar">
+                
+                <!-- User Profile Header -->
+                <div class="sidebar-user-card">
+                    <div class="sidebar-avatar">
+                        {{ user.name[:2].upper() }}
+                    </div>
+                    <h3 class="sidebar-user-name">{{ user.name }}</h3>
+                    <span class="sidebar-user-email">{{ user.email }}</span>
+                    <div class="sidebar-user-badge">
+                        <span class="badge-dot"></span> {{ user.experience_level or 'Trekker Explorer' }}
+                    </div>
+                </div>
+
+                <div class="sidebar-divider"></div>
+
+                <!-- Navigation Tabs / Options -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-compass" style="color: var(--purple-primary);"></i> Menu
+                    </label>
+                    <nav class="dashboard-nav-tabs">
+                        <button type="button" class="dash-tab-btn active" onclick="switchDashboardTab('personal', this)">
+                            <i class="fa-regular fa-user"></i>
+                            <span>Personal Details</span>
+                        </button>
+
+                        <button type="button" class="dash-tab-btn" onclick="switchDashboardTab('achievements', this)">
+                            <i class="fa-solid fa-trophy"></i>
+                            <span>Achievements</span>
+                        </button>
+
+                        <button type="button" class="dash-tab-btn" onclick="switchDashboardTab('settings', this)">
+                            <i class="fa-solid fa-gear"></i>
+                            <span>Settings</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="sidebar-divider" style="margin-top: auto;"></div>
+
+                <!-- Sidebar Bottom Actions -->
+                <div class="sidebar-bottom-actions">
+                    <a href="{{ url_for('logout') }}" class="btn-dash-action-danger">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                    </a>
+                </div>
+            </aside>
+
+            <!-- RIGHT MAIN CONTENT CARD -->
+            <section class="dashboard-content-panel">
+                
+                <!-- TOP RIGHT CORNER INSIDE BORDER: Back to Treks Button -->
+                <a href="{{ url_for('treks') }}" class="dash-corner-back-btn" title="Back to Treks">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Back to Treks</span>
+                </a>
+
+                <!-- TAB 1: Personal Details (Default Active) -->
+                <div class="dash-tab-pane active" id="tab-personal">
+                    <div class="pane-header">
+                        <h3 class="pane-title">Personal Details</h3>
+                    </div>
+
+                    <form action="{{ url_for('dashboard') }}" method="POST" class="profile-details-form">
+                        <div class="form-grid-2">
+                            <!-- Full Name -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">Full Name</label>
+                                <div class="dash-input-wrap">
+                                    <input type="text" name="name" class="dash-input" value="{{ user.name }}" required>
+                                    <i class="fa-regular fa-user dash-input-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">Email</label>
+                                <div class="dash-input-wrap">
+                                    <input type="email" class="dash-input" value="{{ user.email }}" disabled style="opacity: 0.7; cursor: not-allowed;">
+                                    <i class="fa-regular fa-envelope dash-input-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- Contact -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">Contact</label>
+                                <div class="dash-input-wrap">
+                                    <input type="tel" name="phone" class="dash-input" placeholder="+91 98765 43210" value="{{ user.phone or '' }}">
+                                    <i class="fa-solid fa-phone dash-input-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- Date of Birth (iOS Style 3D Wheel Drum Roller) -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">Date of Birth</label>
+                                <div class="wheel-picker-container" id="wheelPickerContainer">
+                                    <div class="dash-input-wrap">
+                                        <input type="text" id="dobDisplayInput" class="dash-input" placeholder="Select Date of Birth" readonly style="cursor: pointer;" onclick="toggleWheelPicker()">
+                                        <i class="fa-regular fa-calendar dash-input-icon"></i>
+                                        <i class="fa-solid fa-chevron-down wheel-trigger-arrow"></i>
+                                        <input type="hidden" name="birthdate" id="birthdateInput" value="{{ user.birthdate or '' }}">
+                                    </div>
+
+                                    <!-- 3D Wheel Drum Roller Dropdown -->
+                                    <div class="wheel-picker-dropdown" id="wheelPickerDropdown">
+                                        <div class="wheel-header">
+                                            <span class="wheel-header-title">
+                                                <i class="fa-solid fa-cake-candles"></i> Select Date of Birth
+                                            </span>
+                                            <button type="button" class="btn-wheel-cancel" onclick="closeWheelPicker()" style="padding: 2px 8px; height: 24px; font-size: 0.75rem;">&times;</button>
+                                        </div>
+
+                                        <div class="wheel-columns-wrapper">
+                                            <!-- Top & Bottom Gradient Fades -->
+                                            <div class="wheel-gradient-top"></div>
+                                            <div class="wheel-gradient-bottom"></div>
+
+                                            <!-- Central Glowing Highlight Bar -->
+                                            <div class="wheel-highlight-bar"></div>
+
+                                            <!-- Column 1: Month -->
+                                            <div class="wheel-column" id="wheelMonthCol"></div>
+
+                                            <!-- Column 2: Day -->
+                                            <div class="wheel-column" id="wheelDayCol"></div>
+
+                                            <!-- Column 3: Year -->
+                                            <div class="wheel-column" id="wheelYearCol"></div>
+                                        </div>
+
+                                        <div class="wheel-actions">
+                                            <button type="button" class="btn-wheel-cancel" onclick="closeWheelPicker()">Cancel</button>
+                                            <button type="button" class="btn-wheel-set" onclick="applyWheelPickerDate()">Set Date</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Age (Readonly like Email) -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">Age</label>
+                                <div class="dash-input-wrap">
+                                    <input type="number" name="age" id="ageInput" class="dash-input" placeholder="Auto from DOB" value="{{ user.age or '' }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                    <i class="fa-solid fa-hourglass-half dash-input-icon"></i>
+                                </div>
+                            </div>
+
+                            <!-- City (Searchable Combobox & Map Auto-Detection) -->
+                            <div class="dash-form-group" style="position: relative;" id="cityComboboxGroup">
+                                <label class="dash-form-label">City</label>
+                                <div class="dash-input-wrap">
+                                    <input type="text" name="city" id="cityInput" class="dash-input" placeholder="Type city or select..." value="{{ user.city or '' }}" autocomplete="off" oninput="handleCityInput(this.value)" onfocus="showCityDropdown()" onkeydown="handleCityKeydown(event)">
+                                    <i class="fa-solid fa-city dash-input-icon"></i>
+                                    <span id="cityGeoLoading" class="city-geo-spinner" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                                    <button type="button" class="btn-city-dropdown-toggle" id="cityToggleBtn" onclick="toggleCityDropdownDirect(event)">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                </div>
+
+                                <!-- City Dropdown Popover -->
+                                <div class="city-autocomplete-dropdown" id="cityAutocompleteDropdown">
+                                    <div class="city-dropdown-header">
+                                        <span id="cityDropdownTitle">Select City</span>
+                                    </div>
+                                    <div class="city-dropdown-list" id="cityDropdownList"></div>
+                                </div>
+                            </div>
+
+                            <!-- State (Dropdown with Auto-fill) -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">State</label>
+                                <div class="dash-select-wrap">
+                                    <select name="state" id="stateInput" class="dash-select">
+                                        <option value="" disabled {{ 'selected' if not user.state }}>Select State</option>
+                                        <optgroup label="── Indian States & UTs ──">
+                                            <option value="Andaman and Nicobar" {{ 'selected' if user.state == 'Andaman and Nicobar' }}>Andaman and Nicobar</option>
+                                            <option value="Andhra Pradesh" {{ 'selected' if user.state == 'Andhra Pradesh' }}>Andhra Pradesh</option>
+                                            <option value="Arunachal Pradesh" {{ 'selected' if user.state == 'Arunachal Pradesh' }}>Arunachal Pradesh</option>
+                                            <option value="Assam" {{ 'selected' if user.state == 'Assam' }}>Assam</option>
+                                            <option value="Bihar" {{ 'selected' if user.state == 'Bihar' }}>Bihar</option>
+                                            <option value="Chandigarh" {{ 'selected' if user.state == 'Chandigarh' }}>Chandigarh</option>
+                                            <option value="Chhattisgarh" {{ 'selected' if user.state == 'Chhattisgarh' }}>Chhattisgarh</option>
+                                            <option value="Dadra and Nagar Haveli" {{ 'selected' if user.state == 'Dadra and Nagar Haveli' }}>Dadra and Nagar Haveli</option>
+                                            <option value="Delhi" {{ 'selected' if user.state == 'Delhi' }}>Delhi</option>
+                                            <option value="Goa" {{ 'selected' if user.state == 'Goa' }}>Goa</option>
+                                            <option value="Gujarat" {{ 'selected' if user.state == 'Gujarat' }}>Gujarat</option>
+                                            <option value="Haryana" {{ 'selected' if user.state == 'Haryana' }}>Haryana</option>
+                                            <option value="Himachal Pradesh" {{ 'selected' if user.state == 'Himachal Pradesh' }}>Himachal Pradesh</option>
+                                            <option value="Jammu & Kashmir" {{ 'selected' if user.state in ['Jammu & Kashmir', 'Jammu and Kashmir'] }}>Jammu & Kashmir</option>
+                                            <option value="Jharkhand" {{ 'selected' if user.state == 'Jharkhand' }}>Jharkhand</option>
+                                            <option value="Karnataka" {{ 'selected' if user.state == 'Karnataka' }}>Karnataka</option>
+                                            <option value="Kerala" {{ 'selected' if user.state == 'Kerala' }}>Kerala</option>
+                                            <option value="Ladakh" {{ 'selected' if user.state == 'Ladakh' }}>Ladakh</option>
+                                            <option value="Lakshadweep" {{ 'selected' if user.state == 'Lakshadweep' }}>Lakshadweep</option>
+                                            <option value="Madhya Pradesh" {{ 'selected' if user.state == 'Madhya Pradesh' }}>Madhya Pradesh</option>
+                                            <option value="Maharashtra" {{ 'selected' if user.state == 'Maharashtra' }}>Maharashtra</option>
+                                            <option value="Manipur" {{ 'selected' if user.state == 'Manipur' }}>Manipur</option>
+                                            <option value="Meghalaya" {{ 'selected' if user.state == 'Meghalaya' }}>Meghalaya</option>
+                                            <option value="Mizoram" {{ 'selected' if user.state == 'Mizoram' }}>Mizoram</option>
+                                            <option value="Nagaland" {{ 'selected' if user.state == 'Nagaland' }}>Nagaland</option>
+                                            <option value="Odisha" {{ 'selected' if user.state == 'Odisha' }}>Odisha</option>
+                                            <option value="Puducherry" {{ 'selected' if user.state == 'Puducherry' }}>Puducherry</option>
+                                            <option value="Punjab" {{ 'selected' if user.state == 'Punjab' }}>Punjab</option>
+                                            <option value="Rajasthan" {{ 'selected' if user.state == 'Rajasthan' }}>Rajasthan</option>
+                                            <option value="Sikkim" {{ 'selected' if user.state == 'Sikkim' }}>Sikkim</option>
+                                            <option value="Tamil Nadu" {{ 'selected' if user.state == 'Tamil Nadu' }}>Tamil Nadu</option>
+                                            <option value="Telangana" {{ 'selected' if user.state == 'Telangana' }}>Telangana</option>
+                                            <option value="Tripura" {{ 'selected' if user.state == 'Tripura' }}>Tripura</option>
+                                            <option value="Uttar Pradesh" {{ 'selected' if user.state == 'Uttar Pradesh' }}>Uttar Pradesh</option>
+                                            <option value="Uttarakhand" {{ 'selected' if user.state == 'Uttarakhand' }}>Uttarakhand</option>
+                                            <option value="West Bengal" {{ 'selected' if user.state == 'West Bengal' }}>West Bengal</option>
+                                        </optgroup>
+                                        <optgroup label="── International ──">
+                                            <option value="Bagmati Province" {{ 'selected' if user.state == 'Bagmati Province' }}>Bagmati Province (Nepal)</option>
+                                            <option value="Gandaki Province" {{ 'selected' if user.state == 'Gandaki Province' }}>Gandaki Province (Nepal)</option>
+                                            <option value="Bern" {{ 'selected' if user.state == 'Bern' }}>Bern (Switzerland)</option>
+                                            <option value="Geneva" {{ 'selected' if user.state == 'Geneva' }}>Geneva (Switzerland)</option>
+                                            <option value="Valais" {{ 'selected' if user.state == 'Valais' }}>Valais (Switzerland)</option>
+                                            <option value="Zurich" {{ 'selected' if user.state == 'Zurich' }}>Zurich (Switzerland)</option>
+                                            <option value="Auvergne-Rhône-Alpes" {{ 'selected' if user.state == 'Auvergne-Rhône-Alpes' }}>Auvergne-Rhône-Alpes (France)</option>
+                                            <option value="England" {{ 'selected' if user.state == 'England' }}>England (UK)</option>
+                                            <option value="New York" {{ 'selected' if user.state == 'New York' }}>New York (USA)</option>
+                                            <option value="Dubai" {{ 'selected' if user.state == 'Dubai' }}>Dubai (UAE)</option>
+                                            {% if user.state and user.state not in ['Andaman and Nicobar', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu & Kashmir', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Bagmati Province', 'Gandaki Province', 'Bern', 'Geneva', 'Valais', 'Zurich', 'Auvergne-Rhône-Alpes', 'England', 'New York', 'Dubai'] %}
+                                            <option value="{{ user.state }}" selected>{{ user.state }}</option>
+                                            {% endif %}
+                                        </optgroup>
+                                    </select>
+                                    <i class="fa-solid fa-map-location-dot dash-input-icon"></i>
+                                    <i class="fa-solid fa-chevron-down dash-select-arrow"></i>
+                                </div>
+                            </div>
+
+                            <!-- Country (Dropdown with Auto-fill) -->
+                            <div class="dash-form-group">
+                                <label class="dash-form-label">Country</label>
+                                <div class="dash-select-wrap">
+                                    <select name="country" id="countryInput" class="dash-select">
+                                        <option value="India" {{ 'selected' if user.country in ['India', '', None] }}>India</option>
+                                        <option value="Nepal" {{ 'selected' if user.country == 'Nepal' }}>Nepal</option>
+                                        <option value="Bhutan" {{ 'selected' if user.country == 'Bhutan' }}>Bhutan</option>
+                                        <option value="Switzerland" {{ 'selected' if user.country == 'Switzerland' }}>Switzerland</option>
+                                        <option value="France" {{ 'selected' if user.country == 'France' }}>France</option>
+                                        <option value="United States" {{ 'selected' if user.country == 'United States' }}>United States</option>
+                                        <option value="United Kingdom" {{ 'selected' if user.country == 'United Kingdom' }}>United Kingdom</option>
+                                        <option value="Australia" {{ 'selected' if user.country == 'Australia' }}>Australia</option>
+                                        <option value="Canada" {{ 'selected' if user.country == 'Canada' }}>Canada</option>
+                                        <option value="Germany" {{ 'selected' if user.country == 'Germany' }}>Germany</option>
+                                        <option value="Italy" {{ 'selected' if user.country == 'Italy' }}>Italy</option>
+                                        <option value="Japan" {{ 'selected' if user.country == 'Japan' }}>Japan</option>
+                                        <option value="New Zealand" {{ 'selected' if user.country == 'New Zealand' }}>New Zealand</option>
+                                        <option value="Norway" {{ 'selected' if user.country == 'Norway' }}>Norway</option>
+                                        <option value="Singapore" {{ 'selected' if user.country == 'Singapore' }}>Singapore</option>
+                                        <option value="Spain" {{ 'selected' if user.country == 'Spain' }}>Spain</option>
+                                        <option value="United Arab Emirates" {{ 'selected' if user.country in ['United Arab Emirates', 'UAE'] }}>United Arab Emirates</option>
+                                        {% if user.country and user.country not in ['India', 'Nepal', 'Bhutan', 'Switzerland', 'France', 'United States', 'United Kingdom', 'Australia', 'Canada', 'Germany', 'Italy', 'Japan', 'New Zealand', 'Norway', 'Singapore', 'Spain', 'United Arab Emirates'] %}
+                                        <option value="{{ user.country }}" selected>{{ user.country }}</option>
+                                        {% endif %}
+                                    </select>
+                                    <i class="fa-solid fa-earth-americas dash-input-icon"></i>
+                                    <i class="fa-solid fa-chevron-down dash-select-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Footer -->
+                        <div class="form-submit-row" style="margin-top: 24px;">
+                            <button type="submit" class="btn btn-primary" style="width: auto; padding: 0 28px; height: 42px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- TAB 2: Achievements -->
+                <div class="dash-tab-pane" id="tab-achievements">
+                    <div class="pane-header">
+                        <h3 class="pane-title">Achievements</h3>
+                    </div>
+
+                    <!-- Sabse Upar: Stats Matrix -->
+                    <div class="achievement-stats-row">
+                        <!-- Stat 1: Max Altitude -->
+                        <div class="ach-stat-card">
+                            <span class="ach-stat-icon ach-icon-purple"><i class="fa-solid fa-mountain-sun"></i></span>
+                            <div class="ach-stat-info">
+                                <span class="ach-stat-label">Max Altitude</span>
+                                <strong id="achStatMaxAlt" class="ach-stat-val">
+                                    {% if achievements and achievements|length > 0 %}
+                                        {% set highest = namespace(ft=0, str='0 ft (0 m)', name='None Yet') %}
+                                        {% for a in achievements %}
+                                            {% if a.altitude_ft and a.altitude_ft > highest.ft %}
+                                                {% set highest.ft = a.altitude_ft %}
+                                                {% set highest.str = a.altitude %}
+                                                {% set highest.name = a.trek_name %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ highest.str if highest.ft > 0 else (achievements[0].altitude or '0 ft (0 m)') }}
+                                    {% else %}
+                                        0 ft (0 m)
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <!-- Stat 2 (Between those 2): Highest Altitude Trek Name -->
+                        <div class="ach-stat-card">
+                            <span class="ach-stat-icon ach-icon-gold"><i class="fa-solid fa-trophy"></i></span>
+                            <div class="ach-stat-info">
+                                <span class="ach-stat-label">Highest Trek</span>
+                                <strong id="achStatHighestTrek" class="ach-stat-val">
+                                    {% if achievements and achievements|length > 0 %}
+                                        {% set highest = namespace(ft=0, name=achievements[0].trek_name) %}
+                                        {% for a in achievements %}
+                                            {% if a.altitude_ft and a.altitude_ft > highest.ft %}
+                                                {% set highest.ft = a.altitude_ft %}
+                                                {% set highest.name = a.trek_name %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ highest.name }}
+                                    {% else %}
+                                        None Yet
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <!-- Stat 3: Total Treks -->
+                        <div class="ach-stat-card">
+                            <span class="ach-stat-icon ach-icon-cyan"><i class="fa-solid fa-person-hiking"></i></span>
+                            <div class="ach-stat-info">
+                                <span class="ach-stat-label">Total Treks</span>
+                                <strong id="achStatTotalTreks" class="ach-stat-val">{{ achievements|length if achievements else 0 }} Completed</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treks Add Karne Ka Option (Positioned at the Top) -->
+                    <div class="add-trek-achievement-card">
+                        <div class="add-trek-card-header">
+                            <span class="add-trek-header-icon"><i class="fa-solid fa-mountain-sun"></i></span>
+                            <div>
+                                <h4 class="add-trek-title">Log Completed Trek</h4>
+                                <p class="add-trek-sub">Record mountain summits, high-altitude trails & expedition dates</p>
+                            </div>
+                        </div>
+
+                        <form id="addAchievementForm" class="add-trek-form" onsubmit="handleAddAchievement(event)">
+                            <div class="add-trek-fields-grid">
+                                <!-- Live Autocomplete Trek Name Field -->
+                                <div class="dash-form-group trek-search-group" id="trekSearchCombobox">
+                                    <label class="dash-form-label"><i class="fa-solid fa-route"></i> Trek / Peak Name</label>
+                                    <div class="dash-input-wrap">
+                                        <input type="text" id="trekNameInput" class="dash-input" placeholder="Type letters to search treks (e.g. Keda...)" autocomplete="off" required oninput="handleTrekSearchInput(this.value)" onfocus="handleTrekSearchFocus()" onkeydown="handleTrekSearchKeydown(event)">
+                                        <i class="fa-solid fa-magnifying-glass dash-input-icon"></i>
+                                    </div>
+                                    
+                                    <!-- Autocomplete Floating Suggestions Dropdown -->
+                                    <div id="trekSuggestDropdown" class="trek-suggest-dropdown" style="display: none;">
+                                        <div class="trek-suggest-header">
+                                            <span id="trekSuggestTitle"><i class="fa-solid fa-compass"></i> Suggested Treks</span>
+                                        </div>
+                                        <div id="trekSuggestList" class="trek-suggest-list"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Starting Date (iOS Style 3D Wheel Drum Roller) -->
+                                <div class="dash-form-group">
+                                    <label class="dash-form-label"><i class="fa-regular fa-calendar-plus"></i> Starting Date</label>
+                                    <div class="wheel-picker-container" id="wheelStartContainer">
+                                        <div class="dash-input-wrap">
+                                            <input type="text" id="trekStartDisplayInput" class="dash-input" placeholder="Select Start Date" readonly style="cursor: pointer;" onclick="toggleTrekWheelPicker('start')">
+                                            <i class="fa-regular fa-calendar-plus dash-input-icon"></i>
+                                            <i class="fa-solid fa-chevron-down wheel-trigger-arrow"></i>
+                                            <input type="hidden" id="trekStartDateInput" required>
+                                        </div>
+
+                                        <!-- 3D Wheel Drum Roller Dropdown -->
+                                        <div class="wheel-picker-dropdown" id="wheelStartDropdown">
+                                            <div class="wheel-header">
+                                                <span class="wheel-header-title">
+                                                    <i class="fa-regular fa-calendar-plus"></i> Select Starting Date
+                                                </span>
+                                                <button type="button" class="btn-wheel-cancel" onclick="closeTrekWheelPicker('start')" style="padding: 2px 8px; height: 24px; font-size: 0.75rem;">&times;</button>
+                                            </div>
+
+                                            <div class="wheel-columns-wrapper">
+                                                <div class="wheel-gradient-top"></div>
+                                                <div class="wheel-gradient-bottom"></div>
+                                                <div class="wheel-highlight-bar"></div>
+
+                                                <!-- Column 1: Month -->
+                                                <div class="wheel-column" id="wheelStartMonthCol"></div>
+                                                <!-- Column 2: Day -->
+                                                <div class="wheel-column" id="wheelStartDayCol"></div>
+                                                <!-- Column 3: Year -->
+                                                <div class="wheel-column" id="wheelStartYearCol"></div>
+                                            </div>
+
+                                            <div class="wheel-actions">
+                                                <button type="button" class="btn-wheel-cancel" onclick="closeTrekWheelPicker('start')">Cancel</button>
+                                                <button type="button" class="btn-wheel-set" onclick="applyTrekWheelPickerDate('start')">Set Date</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ending Date (iOS Style 3D Wheel Drum Roller) -->
+                                <div class="dash-form-group">
+                                    <label class="dash-form-label"><i class="fa-regular fa-calendar-check"></i> Ending Date</label>
+                                    <div class="wheel-picker-container" id="wheelEndContainer">
+                                        <div class="dash-input-wrap">
+                                            <input type="text" id="trekEndDisplayInput" class="dash-input" placeholder="Select End Date" readonly style="cursor: pointer;" onclick="toggleTrekWheelPicker('end')">
+                                            <i class="fa-regular fa-calendar-check dash-input-icon"></i>
+                                            <i class="fa-solid fa-chevron-down wheel-trigger-arrow"></i>
+                                            <input type="hidden" id="trekEndDateInput" required>
+                                        </div>
+
+                                        <!-- 3D Wheel Drum Roller Dropdown -->
+                                        <div class="wheel-picker-dropdown" id="wheelEndDropdown">
+                                            <div class="wheel-header">
+                                                <span class="wheel-header-title">
+                                                    <i class="fa-regular fa-calendar-check"></i> Select Ending Date
+                                                </span>
+                                                <button type="button" class="btn-wheel-cancel" onclick="closeTrekWheelPicker('end')" style="padding: 2px 8px; height: 24px; font-size: 0.75rem;">&times;</button>
+                                            </div>
+
+                                            <div class="wheel-columns-wrapper">
+                                                <div class="wheel-gradient-top"></div>
+                                                <div class="wheel-gradient-bottom"></div>
+                                                <div class="wheel-highlight-bar"></div>
+
+                                                <!-- Column 1: Month -->
+                                                <div class="wheel-column" id="wheelEndMonthCol"></div>
+                                                <!-- Column 2: Day -->
+                                                <div class="wheel-column" id="wheelEndDayCol"></div>
+                                                <!-- Column 3: Year -->
+                                                <div class="wheel-column" id="wheelEndYearCol"></div>
+                                            </div>
+
+                                            <div class="wheel-actions">
+                                                <button type="button" class="btn-wheel-cancel" onclick="closeTrekWheelPicker('end')">Cancel</button>
+                                                <button type="button" class="btn-wheel-set" onclick="applyTrekWheelPickerDate('end')">Set Date</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="add-trek-btn-col">
+                                    <button type="submit" id="btnAddAchievement" class="btn btn-primary btn-add-trek">
+                                        <i class="fa-solid fa-plus"></i> Add Trek
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hidden inputs for auto-populated trek metadata -->
+                            <input type="hidden" id="selectedTrekId">
+                            <input type="hidden" id="selectedTrekAltitude">
+                            <input type="hidden" id="selectedTrekAltitudeFt">
+                            <input type="hidden" id="selectedTrekDistance">
+                            <input type="hidden" id="selectedTrekDifficulty">
+                            <input type="hidden" id="selectedTrekLocation">
+                            <input type="hidden" id="selectedTrekImage">
+                        </form>
+                    </div>
+
+                    <!-- Horizontal Display of Added Treks (No Images, Horizontal Details, Right Action Buttons) -->
+                    <div class="achievements-showcase-section">
+                        <div class="showcase-header-row">
+                            <div class="showcase-title-wrap">
+                                <span class="showcase-icon"><i class="fa-solid fa-person-hiking"></i></span>
+                                <h4 class="showcase-title">Completed Expeditions</h4>
+                                <span id="achievementsCountBadge" class="ach-count-pill">{{ achievements|length if achievements else 0 }} Treks</span>
+                            </div>
+                        </div>
+
+                        <!-- Horizontal List Track -->
+                        <div id="achievementsHorizontalTrack" class="achievements-horizontal-list">
+                            {% if achievements and achievements|length > 0 %}
+                                {% for ach in achievements %}
+                                <div class="ach-horizontal-row-item" id="ach-card-{{ ach.id }}">
+                                    <!-- Top Header Line: Left Info + Right Actions -->
+                                    <div class="ach-card-header">
+                                        <div class="ach-header-left">
+                                            <div class="ach-row-icon"><i class="fa-solid fa-mountain"></i></div>
+                                            <div class="ach-title-wrap">
+                                                <div class="ach-name-row">
+                                                    <h5 class="ach-row-name">{{ ach.trek_name }}</h5>
+                                                    <span class="ach-dates-chip" title="Expedition Dates">
+                                                        <i class="fa-regular fa-calendar-days"></i> {{ ach.start_date }} to {{ ach.end_date }}
+                                                    </span>
+                                                </div>
+                                                {% if ach.location %}
+                                                <span class="ach-row-loc"><i class="fa-solid fa-location-dot"></i> {{ ach.location }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Action Buttons -->
+                                        <div class="ach-row-actions" id="ach-actions-{{ ach.id }}">
+                                            {% if ach.certificate_url %}
+                                                <a href="{{ ach.certificate_url }}" target="_blank" class="btn-cert-view" title="View/Download Certificate">
+                                                    <i class="fa-solid fa-file-circle-check"></i> View Certificate
+                                                </a>
+                                                <label class="btn-cert-replace" title="Replace Certificate">
+                                                    <input type="file" onchange="uploadCertificate({{ ach.id }}, this)" accept=".pdf,image/*" style="display:none;">
+                                                    <i class="fa-solid fa-arrows-rotate"></i>
+                                                </label>
+                                            {% else %}
+                                                <label class="btn-cert-upload" title="Upload Trek Certificate (PDF/Image)">
+                                                    <input type="file" onchange="uploadCertificate({{ ach.id }}, this)" accept=".pdf,image/*" style="display:none;">
+                                                    <i class="fa-solid fa-file-arrow-up"></i> Upload Certificate
+                                                </label>
+                                            {% endif %}
+
+                                            <button type="button" class="btn-ach-delete-icon-only" onclick="deleteAchievement({{ ach.id }})" title="Delete from list">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Full Width Metrics Grid -->
+                                    <div class="ach-metrics-grid">
+                                        <div class="ach-metric-item ach-metric-duration">
+                                            <span class="ach-m-icon"><i class="fa-regular fa-clock"></i></span>
+                                            <div class="ach-m-info">
+                                                <span class="ach-m-label">Duration</span>
+                                                <strong class="ach-m-val">{{ ach.duration_text or 'N/A' }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="ach-metric-item ach-metric-distance">
+                                            <span class="ach-m-icon"><i class="fa-solid fa-route"></i></span>
+                                            <div class="ach-m-info">
+                                                <span class="ach-m-label">Distance</span>
+                                                <strong class="ach-m-val">{{ ach.distance_text or ach.distance or 'N/A' }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="ach-metric-item ach-metric-altitude">
+                                            <span class="ach-m-icon"><i class="fa-solid fa-mountain"></i></span>
+                                            <div class="ach-m-info">
+                                                <span class="ach-m-label">Altitude</span>
+                                                <strong class="ach-m-val">{{ ach.altitude or 'N/A' }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="ach-metric-item ach-metric-difficulty">
+                                            <span class="ach-m-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                                            <div class="ach-m-info">
+                                                <span class="ach-m-label">Difficulty</span>
+                                                <strong class="ach-m-val">{{ ach.difficulty or 'Moderate' }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div id="achEmptyState" class="ach-empty-state">
+                                    <div class="empty-icon"><i class="fa-solid fa-mountain"></i></div>
+                                    <h5>No Completed Treks Added Yet</h5>
+                                    <p>Type a trek name above with your dates to record your first mountain expedition!</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- TAB 4: Settings -->
+                <div class="dash-tab-pane" id="tab-settings">
+                    <div class="pane-header">
+                        <h3 class="pane-title"><i class="fa-solid fa-gear" style="color: var(--purple-primary); margin-right: 8px;"></i> Settings</h3>
+                        <p class="pane-subtitle">Manage your password, account credentials, and security preferences.</p>
+                    </div>
+
+                    <!-- Change Password Card -->
+                    <div class="settings-section-card">
+                        <div class="settings-section-header">
+                            <div class="settings-sec-icon"><i class="fa-solid fa-key"></i></div>
+                            <div>
+                                <h4 class="settings-sec-title">Change Password</h4>
+                                <p class="settings-sec-desc">Ensure your account uses a strong password to protect your expedition logs and certificates.</p>
+                            </div>
+                        </div>
+
+                        <form id="changePasswordForm" action="{{ url_for('change_password') }}" method="POST" onsubmit="handleChangePassword(event)">
+                            <div class="settings-form-grid">
+                                <!-- Current Password -->
+                                <div class="dash-form-group">
+                                    <label class="dash-form-label"><i class="fa-solid fa-lock"></i> Current Password</label>
+                                    <div class="dash-input-wrap">
+                                        <input type="password" name="current_password" id="currentPasswordInput" class="dash-input" placeholder="Enter current password" required autocomplete="current-password">
+                                        <i class="fa-solid fa-lock dash-input-icon"></i>
+                                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('currentPasswordInput', this)" title="Show/Hide Password">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- New Password -->
+                                <div class="dash-form-group">
+                                    <label class="dash-form-label"><i class="fa-solid fa-key"></i> New Password</label>
+                                    <div class="dash-input-wrap">
+                                        <input type="password" name="new_password" id="newPasswordInput" class="dash-input" placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password">
+                                        <i class="fa-solid fa-key dash-input-icon"></i>
+                                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('newPasswordInput', this)" title="Show/Hide Password">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Confirm New Password -->
+                                <div class="dash-form-group">
+                                    <label class="dash-form-label"><i class="fa-solid fa-shield-check"></i> Confirm New Password</label>
+                                    <div class="dash-input-wrap">
+                                        <input type="password" name="confirm_new_password" id="confirmNewPasswordInput" class="dash-input" placeholder="Re-enter new password" required minlength="6" autocomplete="new-password">
+                                        <i class="fa-solid fa-shield-check dash-input-icon"></i>
+                                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('confirmNewPasswordInput', this)" title="Show/Hide Password">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-form-footer">
+                                <button type="submit" id="btnUpdatePassword" class="btn-settings-update">
+                                    <i class="fa-solid fa-shield-check"></i> Update Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Account Security Details Card -->
+                    <div class="settings-section-card" style="margin-top: 22px;">
+                        <div class="settings-section-header">
+                            <div class="settings-sec-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35);"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div>
+                                <h4 class="settings-sec-title">Account Security & Database Info</h4>
+                                <p class="settings-sec-desc">Your encrypted credentials and authentication details.</p>
+                            </div>
+                        </div>
+
+                        <div class="security-card" style="margin-bottom: 18px;">
+                            <div class="sec-left">
+                                <div class="sec-icon"><i class="fa-solid fa-shield-virus"></i></div>
+                                <div class="sec-details">
+                                    <h4>PBKDF2 Password Protection</h4>
+                                    <p>Passwords are salted with cryptographic random salts and hashed using PBKDF2 SHA-256 in local SQLite storage.</p>
+                                </div>
+                            </div>
+                            <div class="sec-badge">
+                                <i class="fa-solid fa-lock"></i> Protected
+                            </div>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-tile">
+                                <div class="tile-icon"><i class="fa-solid fa-fingerprint"></i></div>
+                                <div class="tile-content">
+                                    <span class="tile-label">User ID</span>
+                                    <strong class="tile-value">#USR-{{ "%04d"|format(user.id) }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="info-tile">
+                                <div class="tile-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                                <div class="tile-content">
+                                    <span class="tile-label">Account Created</span>
+                                    <strong class="tile-value">{{ user.created_at[:10] if user.created_at else 'Just now' }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="info-tile">
+                                <div class="tile-icon"><i class="fa-regular fa-clock"></i></div>
+                                <div class="tile-content">
+                                    <span class="tile-label">Last Active Login</span>
+                                    <strong class="tile-value">{{ user.last_login[:16] if user.last_login else 'Active now' }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Dashboard & 3D Wheel Roller Datepicker Scripts -->
+    <script>
+        function switchDashboardTab(tabName, btn) {
+            document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) {
+                btn.classList.add('active');
+            } else {
+                const autoBtn = Array.from(document.querySelectorAll('.dash-tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabName));
+                if (autoBtn) autoBtn.classList.add('active');
+            }
+
+            document.querySelectorAll('.dash-tab-pane').forEach(p => p.classList.remove('active'));
+
+            const targetPane = document.getElementById('tab-' + tabName);
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            const form = event.target;
+            const currentPassword = document.getElementById('currentPasswordInput').value.trim();
+            const newPassword = document.getElementById('newPasswordInput').value.trim();
+            const confirmPassword = document.getElementById('confirmNewPasswordInput').value.trim();
+
+            if (!currentPassword) {
+                showToast('Please enter your current password.', 'warning');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showToast('New password must be at least 6 characters long.', 'warning');
+                return;
+            }
+            if (newPassword === currentPassword) {
+                showToast('New password cannot be the same as your current password.', 'warning');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match.', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('btnUpdatePassword');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+            try {
+                const response = await fetch('/api/user/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_new_password: confirmPassword
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showToast(data.message || 'Password changed successfully!', 'success');
+                    form.reset();
+                } else {
+                    showToast(data.message || 'Failed to update password.', 'danger');
+                }
+            } catch (err) {
+                console.error('Password change error:', err);
+                showToast('Network error while changing password.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                switchDashboardTab(tabParam, null);
+            }
+        });
+
+        function calculateAgeFromDob(dobValue) {
+            if (!dobValue) return;
+            const parts = dobValue.split('-');
+            if (parts.length !== 3) return;
+            
+            const birthYear = parseInt(parts[0], 10);
+            const birthMonth = parseInt(parts[1], 10) - 1;
+            const birthDay = parseInt(parts[2], 10);
+            
+            const dob = new Date(birthYear, birthMonth, birthDay);
+            const today = new Date();
+            
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            
+            if (age >= 0 && age <= 130) {
+                const ageEl = document.getElementById('ageInput');
+                if (ageEl) {
+                    ageEl.value = age;
+                    ageEl.style.borderColor = '#a78bfa';
+                    ageEl.style.boxShadow = '0 0 10px rgba(124, 92, 252, 0.4)';
+                    setTimeout(() => {
+                        ageEl.style.borderColor = '';
+                        ageEl.style.boxShadow = '';
+                    }, 500);
+                }
+            }
+        }
+
+        /* ==========================================
+           3D Wheel Drum Roller Datepicker Engine
+           ========================================== */
+        const MONTH_NAMES = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        let curSelectedMonth = 9;  // October (0-indexed)
+        let curSelectedDay = 1;    // 1-31
+        let curSelectedYear = 1998;
+        const ITEM_HEIGHT = 38;
+
+        function initWheelPicker() {
+            const monthCol = document.getElementById('wheelMonthCol');
+            const dayCol = document.getElementById('wheelDayCol');
+            const yearCol = document.getElementById('wheelYearCol');
+            if (!monthCol || !dayCol || !yearCol) return;
+
+            // 1. Populate Months
+            monthCol.innerHTML = '';
+            MONTH_NAMES.forEach((m, idx) => {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.innerText = m;
+                el.onclick = () => scrollToItem(monthCol, idx);
+                monthCol.appendChild(el);
+            });
+
+            // 2. Populate Years (Current year down to 1940)
+            yearCol.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+            const startYear = 1940;
+            for (let y = currentYear; y >= startYear; y--) {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.innerText = y;
+                const index = currentYear - y;
+                el.onclick = () => scrollToItem(yearCol, index);
+                yearCol.appendChild(el);
+            }
+
+            // 3. Setup Scroll Handlers with Snap & Visual Drum Effect
+            setupColumnScroll(monthCol, (idx) => {
+                curSelectedMonth = idx;
+                refreshDaysInMonth();
+                updateDisplayInputFromSelection();
+            });
+            setupColumnScroll(yearCol, (idx) => {
+                curSelectedYear = currentYear - idx;
+                refreshDaysInMonth();
+                updateDisplayInputFromSelection();
+            });
+            setupColumnScroll(dayCol, (idx) => {
+                curSelectedDay = idx + 1;
+                updateDisplayInputFromSelection();
+            });
+
+            // 4. Initial value from user profile if available
+            const initialDob = document.getElementById('birthdateInput')?.value;
+            if (initialDob) {
+                const parts = initialDob.split('-');
+                if (parts.length === 3) {
+                    curSelectedYear = parseInt(parts[0], 10);
+                    curSelectedMonth = parseInt(parts[1], 10) - 1;
+                    curSelectedDay = parseInt(parts[2], 10);
+                }
+            }
+            refreshDaysInMonth();
+            syncWheelToCurrentSelection();
+            updateDisplayInputFromSelection();
+        }
+
+        function refreshDaysInMonth() {
+            const dayCol = document.getElementById('wheelDayCol');
+            if (!dayCol) return;
+
+            const totalDays = new Date(curSelectedYear, curSelectedMonth + 1, 0).getDate();
+            if (curSelectedDay > totalDays) curSelectedDay = totalDays;
+
+            dayCol.innerHTML = '';
+            for (let d = 1; d <= totalDays; d++) {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.innerText = d < 10 ? '0' + d : d;
+                const idx = d - 1;
+                el.onclick = () => scrollToItem(dayCol, idx);
+                dayCol.appendChild(el);
+            }
+        }
+
+        function scrollToItem(column, index) {
+            column.scrollTo({
+                top: index * ITEM_HEIGHT,
+                behavior: 'smooth'
+            });
+        }
+
+        function setupColumnScroll(column, onSelect) {
+            let scrollTimer = null;
+            column.addEventListener('scroll', () => {
+                updateColumnVisuals(column);
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(() => {
+                    const index = Math.round(column.scrollTop / ITEM_HEIGHT);
+                    column.scrollTo({ top: index * ITEM_HEIGHT, behavior: 'smooth' });
+                    updateColumnVisuals(column);
+                    if (onSelect) onSelect(index);
+                }, 90);
+            });
+        }
+
+        function updateColumnVisuals(column) {
+            const items = column.querySelectorAll('.wheel-item');
+            const activeIdx = Math.round(column.scrollTop / ITEM_HEIGHT);
+            items.forEach((it, idx) => {
+                it.classList.remove('selected', 'adjacent');
+                if (idx === activeIdx) {
+                    it.classList.add('selected');
+                } else if (Math.abs(idx - activeIdx) === 1) {
+                    it.classList.add('adjacent');
+                }
+            });
+        }
+
+        function syncWheelToCurrentSelection() {
+            const monthCol = document.getElementById('wheelMonthCol');
+            const dayCol = document.getElementById('wheelDayCol');
+            const yearCol = document.getElementById('wheelYearCol');
+            const currentYear = new Date().getFullYear();
+
+            if (monthCol) monthCol.scrollTop = curSelectedMonth * ITEM_HEIGHT;
+            if (dayCol) dayCol.scrollTop = (curSelectedDay - 1) * ITEM_HEIGHT;
+            if (yearCol) yearCol.scrollTop = (currentYear - curSelectedYear) * ITEM_HEIGHT;
+
+            setTimeout(() => {
+                if (monthCol) updateColumnVisuals(monthCol);
+                if (dayCol) updateColumnVisuals(dayCol);
+                if (yearCol) updateColumnVisuals(yearCol);
+            }, 120);
+        }
+
+        function updateDisplayInputFromSelection() {
+            const mStr = MONTH_NAMES[curSelectedMonth] || 'October';
+            const dStr = curSelectedDay < 10 ? '0' + curSelectedDay : curSelectedDay;
+            const yStr = curSelectedYear;
+
+            const displayInput = document.getElementById('dobDisplayInput');
+            const hiddenInput = document.getElementById('birthdateInput');
+
+            const formattedDate = `${mStr} ${dStr}, ${yStr}`;
+            const isoDate = `${yStr}-${String(curSelectedMonth + 1).padStart(2, '0')}-${String(dStr).padStart(2, '0')}`;
+
+            if (displayInput) displayInput.value = formattedDate;
+            if (hiddenInput) {
+                hiddenInput.value = isoDate;
+                calculateAgeFromDob(isoDate);
+            }
+        }
+
+        function toggleWheelPicker() {
+            const dropdown = document.getElementById('wheelPickerDropdown');
+            if (!dropdown) return;
+            const isShowing = dropdown.classList.contains('show');
+            if (isShowing) {
+                closeWheelPicker();
+            } else {
+                dropdown.classList.add('show');
+                syncWheelToCurrentSelection();
+            }
+        }
+
+        function closeWheelPicker() {
+            const dropdown = document.getElementById('wheelPickerDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        }
+
+        function applyWheelPickerDate() {
+            updateDisplayInputFromSelection();
+            closeWheelPicker();
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('wheelPickerContainer');
+            if (container && !container.contains(e.target)) {
+                closeWheelPicker();
+            }
+        });
+
+        /* ==========================================
+           Comprehensive A to Z Sorted City Database & Map Geocoding Engine
+           ========================================== */
+        const ALL_CITIES_RAW = [
+            { city: 'Agartala', state: 'Tripura', country: 'India' },
+            { city: 'Agra', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Ahmedabad', state: 'Gujarat', country: 'India' },
+            { city: 'Ahmednagar', state: 'Maharashtra', country: 'India' },
+            { city: 'Aizawl', state: 'Mizoram', country: 'India' },
+            { city: 'Ajmer', state: 'Rajasthan', country: 'India' },
+            { city: 'Aligarh', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Almora', state: 'Uttarakhand', country: 'India' },
+            { city: 'Alwar', state: 'Rajasthan', country: 'India' },
+            { city: 'Ambala', state: 'Haryana', country: 'India' },
+            { city: 'Amravati', state: 'Maharashtra', country: 'India' },
+            { city: 'Amritsar', state: 'Punjab', country: 'India' },
+            { city: 'Anand', state: 'Gujarat', country: 'India' },
+            { city: 'Anantapur', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Anantnag', state: 'Jammu & Kashmir', country: 'India' },
+            { city: 'Asansol', state: 'West Bengal', country: 'India' },
+            { city: 'Aurangabad (Chhatrapati Sambhajinagar)', state: 'Maharashtra', country: 'India' },
+            { city: 'Ayodhya', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Badrinath', state: 'Uttarakhand', country: 'India' },
+            { city: 'Bareilly', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Bathinda', state: 'Punjab', country: 'India' },
+            { city: 'Belagavi (Belgaum)', state: 'Karnataka', country: 'India' },
+            { city: 'Bengaluru (Bangalore)', state: 'Karnataka', country: 'India' },
+            { city: 'Bhagalpur', state: 'Bihar', country: 'India' },
+            { city: 'Bharatpur', state: 'Rajasthan', country: 'India' },
+            { city: 'Bhavnagar', state: 'Gujarat', country: 'India' },
+            { city: 'Bhilai', state: 'Chhattisgarh', country: 'India' },
+            { city: 'Bhilwara', state: 'Rajasthan', country: 'India' },
+            { city: 'Bhopal', state: 'Madhya Pradesh', country: 'India' },
+            { city: 'Bhubaneswar', state: 'Odisha', country: 'India' },
+            { city: 'Bhuj', state: 'Gujarat', country: 'India' },
+            { city: 'Bikaner', state: 'Rajasthan', country: 'India' },
+            { city: 'Bilaspur', state: 'Chhattisgarh', country: 'India' },
+            { city: 'Bokaro', state: 'Jharkhand', country: 'India' },
+            { city: 'Calicut (Kozhikode)', state: 'Kerala', country: 'India' },
+            { city: 'Chamba', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Chamoli', state: 'Uttarakhand', country: 'India' },
+            { city: 'Chamonix', state: 'Auvergne-Rhône-Alpes', country: 'France' },
+            { city: 'Chandigarh', state: 'Chandigarh', country: 'India' },
+            { city: 'Chandrapur', state: 'Maharashtra', country: 'India' },
+            { city: 'Chennai', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Coimbatore', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Cuttack', state: 'Odisha', country: 'India' },
+            { city: 'Darbhanga', state: 'Bihar', country: 'India' },
+            { city: 'Darjeeling', state: 'West Bengal', country: 'India' },
+            { city: 'Davangere', state: 'Karnataka', country: 'India' },
+            { city: 'Dehradun', state: 'Uttarakhand', country: 'India' },
+            { city: 'Delhi', state: 'Delhi', country: 'India' },
+            { city: 'Dhanbad', state: 'Jharkhand', country: 'India' },
+            { city: 'Dharamshala', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Dhule', state: 'Maharashtra', country: 'India' },
+            { city: 'Dibrugarh', state: 'Assam', country: 'India' },
+            { city: 'Dimapur', state: 'Nagaland', country: 'India' },
+            { city: 'Dispur', state: 'Assam', country: 'India' },
+            { city: 'Dubai', state: 'Dubai', country: 'United Arab Emirates' },
+            { city: 'Durgapur', state: 'West Bengal', country: 'India' },
+            { city: 'Erode', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Faridabad', state: 'Haryana', country: 'India' },
+            { city: 'Firozabad', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Gandhidham', state: 'Gujarat', country: 'India' },
+            { city: 'Gandhinagar', state: 'Gujarat', country: 'India' },
+            { city: 'Gangtok', state: 'Sikkim', country: 'India' },
+            { city: 'Gaya', state: 'Bihar', country: 'India' },
+            { city: 'Geneva', state: 'Geneva', country: 'Switzerland' },
+            { city: 'Ghaziabad', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Gorakhpur', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Grindelwald', state: 'Bern', country: 'Switzerland' },
+            { city: 'Gulmarg', state: 'Jammu & Kashmir', country: 'India' },
+            { city: 'Guntur', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Gurugram (Gurgaon)', state: 'Haryana', country: 'India' },
+            { city: 'Guwahati', state: 'Assam', country: 'India' },
+            { city: 'Gwalior', state: 'Madhya Pradesh', country: 'India' },
+            { city: 'Haldwani', state: 'Uttarakhand', country: 'India' },
+            { city: 'Hampi', state: 'Karnataka', country: 'India' },
+            { city: 'Haridwar', state: 'Uttarakhand', country: 'India' },
+            { city: 'Hisar', state: 'Haryana', country: 'India' },
+            { city: 'Hoshiarpur', state: 'Punjab', country: 'India' },
+            { city: 'Hubballi (Hubli)', state: 'Karnataka', country: 'India' },
+            { city: 'Hyderabad', state: 'Telangana', country: 'India' },
+            { city: 'Imphal', state: 'Manipur', country: 'India' },
+            { city: 'Indore', state: 'Madhya Pradesh', country: 'India' },
+            { city: 'Interlaken', state: 'Bern', country: 'Switzerland' },
+            { city: 'Itanagar', state: 'Arunachal Pradesh', country: 'India' },
+            { city: 'Jabalpur', state: 'Madhya Pradesh', country: 'India' },
+            { city: 'Jaipur', state: 'Rajasthan', country: 'India' },
+            { city: 'Jaisalmer', state: 'Rajasthan', country: 'India' },
+            { city: 'Jalandhar', state: 'Punjab', country: 'India' },
+            { city: 'Jalgaon', state: 'Maharashtra', country: 'India' },
+            { city: 'Jammu', state: 'Jammu & Kashmir', country: 'India' },
+            { city: 'Jamnagar', state: 'Gujarat', country: 'India' },
+            { city: 'Jamshedpur', state: 'Jharkhand', country: 'India' },
+            { city: 'Jhansi', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Jodhpur', state: 'Rajasthan', country: 'India' },
+            { city: 'Jorhat', state: 'Assam', country: 'India' },
+            { city: 'Joshimath', state: 'Uttarakhand', country: 'India' },
+            { city: 'Junagadh', state: 'Gujarat', country: 'India' },
+            { city: 'Kakinada', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Kalaburagi (Gulbarga)', state: 'Karnataka', country: 'India' },
+            { city: 'Kalimpong', state: 'West Bengal', country: 'India' },
+            { city: 'Kanchipuram', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Kannur', state: 'Kerala', country: 'India' },
+            { city: 'Kanpur', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Kargil', state: 'Ladakh', country: 'India' },
+            { city: 'Karnal', state: 'Haryana', country: 'India' },
+            { city: 'Kasol', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Kathmandu', state: 'Bagmati Province', country: 'Nepal' },
+            { city: 'Kaza (Spiti)', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Kedarnath', state: 'Uttarakhand', country: 'India' },
+            { city: 'Kochi (Cochin)', state: 'Kerala', country: 'India' },
+            { city: 'Kohima', state: 'Nagaland', country: 'India' },
+            { city: 'Kolhapur', state: 'Maharashtra', country: 'India' },
+            { city: 'Kolkata (Calcutta)', state: 'West Bengal', country: 'India' },
+            { city: 'Kollam', state: 'Kerala', country: 'India' },
+            { city: 'Kota', state: 'Rajasthan', country: 'India' },
+            { city: 'Kottayam', state: 'Kerala', country: 'India' },
+            { city: 'Kozhikode', state: 'Kerala', country: 'India' },
+            { city: 'Kullu', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Kurnool', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Kurukshetra', state: 'Haryana', country: 'India' },
+            { city: 'Latur', state: 'Maharashtra', country: 'India' },
+            { city: 'Leh', state: 'Ladakh', country: 'India' },
+            { city: 'London', state: 'England', country: 'United Kingdom' },
+            { city: 'Lucknow', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Ludhiana', state: 'Punjab', country: 'India' },
+            { city: 'Madurai', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Malda', state: 'West Bengal', country: 'India' },
+            { city: 'Manali', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Mangaluru (Mangalore)', state: 'Karnataka', country: 'India' },
+            { city: 'Mathura', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Meerut', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Mehsana', state: 'Gujarat', country: 'India' },
+            { city: 'Moradabad', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Morbi', state: 'Gujarat', country: 'India' },
+            { city: 'Mumbai (Bombay)', state: 'Maharashtra', country: 'India' },
+            { city: 'Munnar', state: 'Kerala', country: 'India' },
+            { city: 'Mussoorie', state: 'Uttarakhand', country: 'India' },
+            { city: 'Muzaffarnagar', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Muzaffarpur', state: 'Bihar', country: 'India' },
+            { city: 'Mysuru (Mysore)', state: 'Karnataka', country: 'India' },
+            { city: 'Nadiad', state: 'Gujarat', country: 'India' },
+            { city: 'Nagarcoil', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Nagpur', state: 'Maharashtra', country: 'India' },
+            { city: 'Nainital', state: 'Uttarakhand', country: 'India' },
+            { city: 'Nanded', state: 'Maharashtra', country: 'India' },
+            { city: 'Nashik', state: 'Maharashtra', country: 'India' },
+            { city: 'Navi Mumbai', state: 'Maharashtra', country: 'India' },
+            { city: 'Navsari', state: 'Gujarat', country: 'India' },
+            { city: 'Nellore', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'New Delhi', state: 'Delhi', country: 'India' },
+            { city: 'New York', state: 'New York', country: 'United States' },
+            { city: 'Nizamabad', state: 'Telangana', country: 'India' },
+            { city: 'Noida', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Ooty (Udhagamandalam)', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Pahalgam', state: 'Jammu & Kashmir', country: 'India' },
+            { city: 'Palakkad', state: 'Kerala', country: 'India' },
+            { city: 'Palanpur', state: 'Gujarat', country: 'India' },
+            { city: 'Panchkula', state: 'Haryana', country: 'India' },
+            { city: 'Panaji (Goa)', state: 'Goa', country: 'India' },
+            { city: 'Panipat', state: 'Haryana', country: 'India' },
+            { city: 'Pathankot', state: 'Punjab', country: 'India' },
+            { city: 'Patiala', state: 'Punjab', country: 'India' },
+            { city: 'Patna', state: 'Bihar', country: 'India' },
+            { city: 'Pithoragarh', state: 'Uttarakhand', country: 'India' },
+            { city: 'Pokhara', state: 'Gandaki Province', country: 'Nepal' },
+            { city: 'Pondicherry (Puducherry)', state: 'Puducherry', country: 'India' },
+            { city: 'Porbandar', state: 'Gujarat', country: 'India' },
+            { city: 'Port Blair', state: 'Andaman & Nicobar', country: 'India' },
+            { city: 'Prayagraj (Allahabad)', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Pune', state: 'Maharashtra', country: 'India' },
+            { city: 'Puri', state: 'Odisha', country: 'India' },
+            { city: 'Raipur', state: 'Chhattisgarh', country: 'India' },
+            { city: 'Rajahmundry', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Rajkot', state: 'Gujarat', country: 'India' },
+            { city: 'Ranchi', state: 'Jharkhand', country: 'India' },
+            { city: 'Ratnagiri', state: 'Maharashtra', country: 'India' },
+            { city: 'Rishikesh', state: 'Uttarakhand', country: 'India' },
+            { city: 'Rohtak', state: 'Haryana', country: 'India' },
+            { city: 'Roorkee', state: 'Uttarakhand', country: 'India' },
+            { city: 'Rourkela', state: 'Odisha', country: 'India' },
+            { city: 'Rudrapur', state: 'Uttarakhand', country: 'India' },
+            { city: 'Sagar', state: 'Madhya Pradesh', country: 'India' },
+            { city: 'Saharanpur', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Salem', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Sambalpur', state: 'Odisha', country: 'India' },
+            { city: 'Sangli', state: 'Maharashtra', country: 'India' },
+            { city: 'Satara', state: 'Maharashtra', country: 'India' },
+            { city: 'Shillong', state: 'Meghalaya', country: 'India' },
+            { city: 'Shimla', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Shivamogga (Shimoga)', state: 'Karnataka', country: 'India' },
+            { city: 'Silchar', state: 'Assam', country: 'India' },
+            { city: 'Siliguri', state: 'West Bengal', country: 'India' },
+            { city: 'Solan', state: 'Himachal Pradesh', country: 'India' },
+            { city: 'Solapur', state: 'Maharashtra', country: 'India' },
+            { city: 'Sonamarg', state: 'Jammu & Kashmir', country: 'India' },
+            { city: 'Sonipat', state: 'Haryana', country: 'India' },
+            { city: 'Srinagar', state: 'Jammu & Kashmir', country: 'India' },
+            { city: 'Surat', state: 'Gujarat', country: 'India' },
+            { city: 'Surendranagar', state: 'Gujarat', country: 'India' },
+            { city: 'Tezpur', state: 'Assam', country: 'India' },
+            { city: 'Thane', state: 'Maharashtra', country: 'India' },
+            { city: 'Thanjavur', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Thiruvananthapuram (Trivandrum)', state: 'Kerala', country: 'India' },
+            { city: 'Thrissur', state: 'Kerala', country: 'India' },
+            { city: 'Tiruchirappalli (Trichy)', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Tirunelveli', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Tirupati', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Tirupur', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Tokyo', state: 'Tokyo', country: 'Japan' },
+            { city: 'Tumakuru (Tumkur)', state: 'Karnataka', country: 'India' },
+            { city: 'Udaipur', state: 'Rajasthan', country: 'India' },
+            { city: 'Udupi', state: 'Karnataka', country: 'India' },
+            { city: 'Ujjain', state: 'Madhya Pradesh', country: 'India' },
+            { city: 'Uttarkashi', state: 'Uttarakhand', country: 'India' },
+            { city: 'Vadodara (Baroda)', state: 'Gujarat', country: 'India' },
+            { city: 'Valsad', state: 'Gujarat', country: 'India' },
+            { city: 'Vapi', state: 'Gujarat', country: 'India' },
+            { city: 'Varanasi (Banaras)', state: 'Uttar Pradesh', country: 'India' },
+            { city: 'Vasai-Virar', state: 'Maharashtra', country: 'India' },
+            { city: 'Vellore', state: 'Tamil Nadu', country: 'India' },
+            { city: 'Vijayawada', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Visakhapatnam (Vizag)', state: 'Andhra Pradesh', country: 'India' },
+            { city: 'Warangal', state: 'Telangana', country: 'India' },
+            { city: 'Yamunanagar', state: 'Haryana', country: 'India' },
+            { city: 'Zermatt', state: 'Valais', country: 'Switzerland' },
+            { city: 'Zurich', state: 'Zurich', country: 'Switzerland' }
+        ];
+
+        // 100% Strictly Alphabetically (A to Z) Sorted Database
+        const ALL_CITIES = ALL_CITIES_RAW.sort((a, b) => a.city.localeCompare(b.city, undefined, { sensitivity: 'base' }));
+
+        let cityLookupTimer = null;
+
+        function showCityDropdown(filterQuery = '') {
+            const dropdown = document.getElementById('cityAutocompleteDropdown');
+            const listEl = document.getElementById('cityDropdownList');
+            const titleEl = document.getElementById('cityDropdownTitle');
+            if (!dropdown || !listEl) return;
+
+            const q = filterQuery.trim().toLowerCase();
+            let matches = [];
+
+            if (!q) {
+                if (titleEl) titleEl.innerText = 'Select City';
+                matches = ALL_CITIES;
+            } else {
+                // Strict Prefix Matching: Only cities whose name starts with the exact typed sequence
+                matches = ALL_CITIES.filter(c => c.city.toLowerCase().startsWith(q));
+
+                if (titleEl) titleEl.innerText = `Select City (${matches.length} found)`;
+            }
+
+            renderCityList(matches, q);
+            dropdown.classList.add('show');
+        }
+
+        function renderCityList(cities, query = '') {
+            const listEl = document.getElementById('cityDropdownList');
+            if (!listEl) return;
+
+            if (cities.length === 0) {
+                listEl.innerHTML = `
+                    <div style="padding: 14px; text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-map-location-dot" style="color: var(--purple-primary); margin-right: 6px;"></i>
+                        Searching map coordinates for "<strong>${escapeHtml(query)}</strong>"...
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = '';
+            cities.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'city-dropdown-item';
+
+                // Display clean, single-piece unbroken city name
+                div.innerHTML = `
+                    <span class="city-item-name">
+                        <i class="fa-solid fa-location-dot"></i> ${escapeHtml(item.city)}
+                    </span>
+                    <span class="city-item-meta">${item.state}, ${item.country}</span>
+                `;
+                div.onmousedown = (e) => {
+                    e.preventDefault();
+                    selectCityItem(item.city, item.state, item.country);
+                };
+                listEl.appendChild(div);
+            });
+        }
+
+        function selectCityItem(city, state, country) {
+            const cityInput = document.getElementById('cityInput');
+            const stateInput = document.getElementById('stateInput');
+            const countryInput = document.getElementById('countryInput');
+
+            if (cityInput) cityInput.value = city;
+            if (stateInput && state) {
+                stateInput.value = state;
+                flashInputSuccess(stateInput);
+            }
+            if (countryInput && country) {
+                countryInput.value = country;
+                flashInputSuccess(countryInput);
+            }
+
+            hideCityDropdown();
+        }
+
+        function toggleCityDropdownDirect(event) {
+            if (event) event.stopPropagation();
+            const dropdown = document.getElementById('cityAutocompleteDropdown');
+            if (!dropdown) return;
+            if (dropdown.classList.contains('show')) {
+                hideCityDropdown();
+            } else {
+                const query = document.getElementById('cityInput')?.value || '';
+                showCityDropdown(query);
+            }
+        }
+
+        function hideCityDropdown() {
+            const dropdown = document.getElementById('cityAutocompleteDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        }
+
+        function handleCityInput(val) {
+            showCityDropdown(val);
+
+            const q = val.trim().toLowerCase();
+            if (!q) return;
+
+            // 1. Check local prefix matches in A-to-Z database
+            const localMatches = ALL_CITIES.filter(c => c.city.toLowerCase().startsWith(q));
+
+            // Instant exact match check
+            const exact = ALL_CITIES.find(c => c.city.toLowerCase() === q);
+            if (exact) {
+                autoFillStateCountry(exact.state, exact.country);
+                return;
+            }
+
+            // CRITICAL FIX: If local matches exist in database, DO NOT overwrite with external map results!
+            clearTimeout(cityLookupTimer);
+            if (localMatches.length > 0) {
+                const spinner = document.getElementById('cityGeoLoading');
+                if (spinner) spinner.style.display = 'none';
+                return;
+            }
+
+            // 2. Only if ZERO local matches found in database, query live map geocoding
+            if (q.length >= 3) {
+                const spinner = document.getElementById('cityGeoLoading');
+                if (spinner) spinner.style.display = 'inline-block';
+
+                cityLookupTimer = setTimeout(() => {
+                    fetchMapGeocoding(val.trim());
+                }, 500);
+            }
+        }
+
+        async function fetchMapGeocoding(query) {
+            const spinner = document.getElementById('cityGeoLoading');
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=6`;
+                const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+                const data = await res.json();
+
+                if (spinner) spinner.style.display = 'none';
+
+                if (Array.isArray(data) && data.length > 0) {
+                    const seen = new Set();
+                    const geoMatches = [];
+
+                    data.forEach(item => {
+                        const addr = item.address || {};
+                        const cityName = addr.city || addr.town || addr.village || addr.municipality || addr.county || item.name;
+                        const stateName = addr.state || addr.state_district || addr.region || addr.province || '';
+                        const countryName = addr.country || 'India';
+
+                        if (cityName) {
+                            const key = `${cityName.toLowerCase().trim()}|${stateName.toLowerCase().trim()}`;
+                            if (!seen.has(key)) {
+                                seen.add(key);
+                                geoMatches.push({
+                                    city: cityName,
+                                    state: stateName,
+                                    country: countryName
+                                });
+                            }
+                        }
+                    });
+
+                    if (geoMatches.length > 0) {
+                        renderCityList(geoMatches, query);
+                        const titleEl = document.getElementById('cityDropdownTitle');
+                        if (titleEl) titleEl.innerText = `Select City (${geoMatches.length} found)`;
+
+                        const topMatch = geoMatches[0];
+                        if (topMatch.state || topMatch.country) {
+                            autoFillStateCountry(topMatch.state, topMatch.country);
+                        }
+                    }
+                }
+            } catch (err) {
+                if (spinner) spinner.style.display = 'none';
+            }
+        }
+
+        function autoFillStateCountry(state, country) {
+            const stateSelect = document.getElementById('stateInput');
+            const countrySelect = document.getElementById('countryInput');
+
+            if (stateSelect && state) {
+                const sLower = state.trim().toLowerCase();
+                let matchedOpt = Array.from(stateSelect.options).find(opt => 
+                    opt.value.toLowerCase() === sLower ||
+                    opt.text.toLowerCase().includes(sLower) ||
+                    (opt.value && sLower.includes(opt.value.toLowerCase()))
+                );
+                if (matchedOpt) {
+                    stateSelect.value = matchedOpt.value;
+                } else {
+                    const newOpt = new Option(state, state, true, true);
+                    stateSelect.add(newOpt);
+                    stateSelect.value = state;
+                }
+                flashInputSuccess(stateSelect);
+            }
+
+            if (countrySelect && country) {
+                const cLower = country.trim().toLowerCase();
+                let matchedCountry = Array.from(countrySelect.options).find(opt => 
+                    opt.value.toLowerCase() === cLower ||
+                    opt.text.toLowerCase().includes(cLower) ||
+                    (opt.value && cLower.includes(opt.value.toLowerCase()))
+                );
+                if (matchedCountry) {
+                    countrySelect.value = matchedCountry.value;
+                } else {
+                    const newOpt = new Option(country, country, true, true);
+                    countrySelect.add(newOpt);
+                    countrySelect.value = country;
+                }
+                flashInputSuccess(countrySelect);
+            }
+        }
+
+        function flashInputSuccess(inputEl) {
+            inputEl.style.transition = 'border-color 0.3s ease, box-shadow 0.3s ease';
+            inputEl.style.borderColor = '#10b981';
+            inputEl.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.45)';
+            setTimeout(() => {
+                inputEl.style.borderColor = '';
+                inputEl.style.boxShadow = '';
+            }, 700);
+        }
+
+        function handleCityKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const listEl = document.getElementById('cityDropdownList');
+                const firstItem = listEl?.querySelector('.city-dropdown-item');
+                if (firstItem) {
+                    firstItem.dispatchEvent(new MouseEvent('mousedown'));
+                } else {
+                    hideCityDropdown();
+                }
+            } else if (e.key === 'Escape') {
+                hideCityDropdown();
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+            });
+        }
+
+        // Close city dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const cityGroup = document.getElementById('cityComboboxGroup');
+            if (cityGroup && !cityGroup.contains(e.target)) {
+                hideCityDropdown();
+            }
+        });
+
+        // Initialize Wheel Pickers on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initWheelPicker();
+            initTrekWheelPicker('start');
+            initTrekWheelPicker('end');
+        });
+
+        /* ==========================================
+           Trek Start & End 3D Wheel Pickers Engine
+           ========================================== */
+        const trekWheelPickers = {
+            start: {
+                month: new Date().getMonth(),
+                day: new Date().getDate(),
+                year: new Date().getFullYear(),
+                monthColId: 'wheelStartMonthCol',
+                dayColId: 'wheelStartDayCol',
+                yearColId: 'wheelStartYearCol',
+                displayInputId: 'trekStartDisplayInput',
+                hiddenInputId: 'trekStartDateInput',
+                dropdownId: 'wheelStartDropdown',
+                containerId: 'wheelStartContainer'
+            },
+            end: {
+                month: new Date().getMonth(),
+                day: new Date().getDate(),
+                year: new Date().getFullYear(),
+                monthColId: 'wheelEndMonthCol',
+                dayColId: 'wheelEndDayCol',
+                yearColId: 'wheelEndYearCol',
+                displayInputId: 'trekEndDisplayInput',
+                hiddenInputId: 'trekEndDateInput',
+                dropdownId: 'wheelEndDropdown',
+                containerId: 'wheelEndContainer'
+            }
+        };
+
+        function initTrekWheelPicker(type) {
+            const config = trekWheelPickers[type];
+            if (!config) return;
+
+            const monthCol = document.getElementById(config.monthColId);
+            const dayCol = document.getElementById(config.dayColId);
+            const yearCol = document.getElementById(config.yearColId);
+            if (!monthCol || !dayCol || !yearCol) return;
+
+            // 1. Populate Months
+            monthCol.innerHTML = '';
+            MONTH_NAMES.forEach((m, idx) => {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.innerText = m;
+                el.onclick = () => scrollToItem(monthCol, idx);
+                monthCol.appendChild(el);
+            });
+
+            // 2. Populate Years (Current Year + 2 down to 1980)
+            yearCol.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+            const maxYear = currentYear + 2;
+            const minYear = 1980;
+            for (let y = maxYear; y >= minYear; y--) {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.innerText = y;
+                const index = maxYear - y;
+                el.onclick = () => scrollToItem(yearCol, index);
+                yearCol.appendChild(el);
+            }
+
+            // 3. Setup scroll listeners with snap
+            setupColumnScroll(monthCol, (idx) => {
+                config.month = idx;
+                refreshTrekDays(type);
+                updateTrekDisplay(type);
+            });
+            setupColumnScroll(yearCol, (idx) => {
+                config.year = maxYear - idx;
+                refreshTrekDays(type);
+                updateTrekDisplay(type);
+            });
+            setupColumnScroll(dayCol, (idx) => {
+                config.day = idx + 1;
+                updateTrekDisplay(type);
+            });
+
+            refreshTrekDays(type);
+            syncTrekWheel(type);
+        }
+
+        function refreshTrekDays(type) {
+            const config = trekWheelPickers[type];
+            if (!config) return;
+            const dayCol = document.getElementById(config.dayColId);
+            if (!dayCol) return;
+
+            const totalDays = new Date(config.year, config.month + 1, 0).getDate();
+            if (config.day > totalDays) config.day = totalDays;
+
+            dayCol.innerHTML = '';
+            for (let d = 1; d <= totalDays; d++) {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.innerText = d < 10 ? '0' + d : d;
+                const idx = d - 1;
+                el.onclick = () => scrollToItem(dayCol, idx);
+                dayCol.appendChild(el);
+            }
+        }
+
+        function syncTrekWheel(type) {
+            const config = trekWheelPickers[type];
+            if (!config) return;
+            const monthCol = document.getElementById(config.monthColId);
+            const dayCol = document.getElementById(config.dayColId);
+            const yearCol = document.getElementById(config.yearColId);
+            const maxYear = new Date().getFullYear() + 2;
+
+            if (monthCol) monthCol.scrollTop = config.month * ITEM_HEIGHT;
+            if (dayCol) dayCol.scrollTop = (config.day - 1) * ITEM_HEIGHT;
+            if (yearCol) yearCol.scrollTop = (maxYear - config.year) * ITEM_HEIGHT;
+
+            setTimeout(() => {
+                if (monthCol) updateColumnVisuals(monthCol);
+                if (dayCol) updateColumnVisuals(dayCol);
+                if (yearCol) updateColumnVisuals(yearCol);
+            }, 120);
+        }
+
+        function updateTrekDisplay(type) {
+            const config = trekWheelPickers[type];
+            if (!config) return;
+
+            const mStr = MONTH_NAMES[config.month] || 'October';
+            const dStr = config.day < 10 ? '0' + config.day : config.day;
+            const yStr = config.year;
+
+            const displayInput = document.getElementById(config.displayInputId);
+            const hiddenInput = document.getElementById(config.hiddenInputId);
+
+            const formattedDate = `${mStr} ${dStr}, ${yStr}`;
+            const isoDate = `${yStr}-${String(config.month + 1).padStart(2, '0')}-${String(dStr).padStart(2, '0')}`;
+
+            if (displayInput) displayInput.value = formattedDate;
+            if (hiddenInput) hiddenInput.value = isoDate;
+        }
+
+        function toggleTrekWheelPicker(type) {
+            const config = trekWheelPickers[type];
+            if (!config) return;
+            const dropdown = document.getElementById(config.dropdownId);
+            if (!dropdown) return;
+
+            const isShowing = dropdown.classList.contains('show');
+            closeTrekWheelPicker('start');
+            closeTrekWheelPicker('end');
+            closeWheelPicker();
+
+            if (!isShowing) {
+                dropdown.classList.add('show');
+                syncTrekWheel(type);
+                if (!document.getElementById(config.displayInputId).value) {
+                    updateTrekDisplay(type);
+                }
+            }
+        }
+
+        function closeTrekWheelPicker(type) {
+            const config = trekWheelPickers[type];
+            if (!config) return;
+            const dropdown = document.getElementById(config.dropdownId);
+            if (dropdown) dropdown.classList.remove('show');
+        }
+
+        function applyTrekWheelPickerDate(type) {
+            updateTrekDisplay(type);
+            closeTrekWheelPicker(type);
+        }
+
+        /* ==========================================
+           Achievements & Autocomplete Treks Logic
+           ========================================== */
+        const ALL_TREKS_DATA = {{ all_treks|tojson if all_treks else '[]' }};
+        let currentAchievements = {{ achievements|tojson if achievements else '[]' }};
+
+        function handleTrekSearchFocus() {
+            const input = document.getElementById('trekNameInput');
+            if (input && input.value.trim().length > 0) {
+                handleTrekSearchInput(input.value);
+            }
+        }
+
+        function handleTrekSearchInput(val) {
+            const dropdown = document.getElementById('trekSuggestDropdown');
+            const listEl = document.getElementById('trekSuggestList');
+            const titleEl = document.getElementById('trekSuggestTitle');
+            if (!dropdown || !listEl) return;
+
+            const q = val.trim().toLowerCase();
+            if (q.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            // Filter matching treks
+            const matches = ALL_TREKS_DATA.filter(t => {
+                const nameMatch = t.name.toLowerCase().includes(q);
+                const regionMatch = (t.region || '').toLowerCase().includes(q);
+                const countryMatch = (t.country || '').toLowerCase().includes(q);
+                return nameMatch || regionMatch || countryMatch;
+            });
+
+            if (matches.length === 0) {
+                listEl.innerHTML = `
+                    <div class="trek-suggest-empty">
+                        <span>No predefined trek found for "${escapeHtml(val)}"</span>
+                        <small>You can still add this custom mountain trek!</small>
+                    </div>
+                `;
+                titleEl.innerHTML = `<i class="fa-solid fa-compass"></i> Suggestions (Custom)`;
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            titleEl.innerHTML = `<i class="fa-solid fa-compass"></i> Suggested Treks (${matches.length})`;
+            listEl.innerHTML = matches.map((t, idx) => {
+                const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                const highlightedName = escapeHtml(t.name).replace(regex, '<span class="suggest-highlight">$1</span>');
+
+                const altDisplay = t.max_altitude_text || t.altitude || 'N/A';
+                return `
+                    <div class="trek-suggest-item" onclick="selectTrekSuggestion('${t.id}')">
+                        <img src="${t.image}" alt="${escapeHtml(t.name)}" class="suggest-thumb" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&auto=format&fit=crop&q=80'">
+                        <div class="suggest-details">
+                            <strong class="suggest-name">${highlightedName}</strong>
+                            <div class="suggest-meta">
+                                <span><i class="fa-solid fa-location-dot"></i> ${t.region}, ${t.country}</span>
+                                <span><i class="fa-solid fa-mountain"></i> ${altDisplay}</span>
+                            </div>
+                        </div>
+                        <span class="suggest-diff-tag">${t.difficulty}</span>
+                    </div>
+                `;
+            }).join('');
+
+            dropdown.style.display = 'block';
+        }
+
+        function selectTrekSuggestion(trekId) {
+            const trek = ALL_TREKS_DATA.find(t => t.id === trekId);
+            if (!trek) return;
+
+            const nameInput = document.getElementById('trekNameInput');
+            if (nameInput) nameInput.value = trek.name;
+
+            const altText = trek.max_altitude_text || trek.altitude || '';
+            const altFt = trek.max_altitude_ft || trek.altitude_ft || 0;
+            const distText = trek.distance_text || trek.distance || '';
+
+            document.getElementById('selectedTrekId').value = trek.id;
+            document.getElementById('selectedTrekAltitude').value = altText;
+            document.getElementById('selectedTrekAltitudeFt').value = altFt;
+            document.getElementById('selectedTrekDistance').value = distText;
+            document.getElementById('selectedTrekDifficulty').value = trek.difficulty || 'Moderate';
+            document.getElementById('selectedTrekLocation').value = `${trek.region}, ${trek.country}`;
+            document.getElementById('selectedTrekImage').value = trek.image || '';
+
+            // Close dropdown
+            const dropdown = document.getElementById('trekSuggestDropdown');
+            if (dropdown) dropdown.style.display = 'none';
+
+            // Flash input success
+            if (nameInput) flashInputSuccess(nameInput);
+        }
+
+        function handleTrekSearchKeydown(e) {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('trekSuggestDropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            }
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            const startContainer = document.getElementById('wheelStartContainer');
+            if (startContainer && !startContainer.contains(e.target)) {
+                closeTrekWheelPicker('start');
+            }
+
+            const endContainer = document.getElementById('wheelEndContainer');
+            if (endContainer && !endContainer.contains(e.target)) {
+                closeTrekWheelPicker('end');
+            }
+
+            const combobox = document.getElementById('trekSearchCombobox');
+            const dropdown = document.getElementById('trekSuggestDropdown');
+            if (combobox && dropdown && !combobox.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        async function handleAddAchievement(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnAddAchievement');
+            const nameInput = document.getElementById('trekNameInput');
+            const startInput = document.getElementById('trekStartDateInput');
+            const endInput = document.getElementById('trekEndDateInput');
+
+            if (!nameInput || !nameInput.value.trim()) return;
+            if (!startInput || !startInput.value) {
+                alert('Please select a starting date.');
+                toggleTrekWheelPicker('start');
+                return;
+            }
+            if (!endInput || !endInput.value) {
+                alert('Please select an ending date.');
+                toggleTrekWheelPicker('end');
+                return;
+            }
+
+            const trekName = nameInput.value.trim();
+            const startDate = startInput.value;
+            const endDate = endInput.value;
+
+            // Check if user selected or typed a matching trek
+            let trekId = document.getElementById('selectedTrekId').value;
+            let altitude = document.getElementById('selectedTrekAltitude').value;
+            let altitudeFt = parseInt(document.getElementById('selectedTrekAltitudeFt').value) || 0;
+            let distance = document.getElementById('selectedTrekDistance').value;
+            let difficulty = document.getElementById('selectedTrekDifficulty').value;
+            let location = document.getElementById('selectedTrekLocation').value;
+            let image = document.getElementById('selectedTrekImage').value;
+
+            // Fallback: If altitude not set, try finding by name in ALL_TREKS_DATA
+            if (!altitude) {
+                const match = ALL_TREKS_DATA.find(t => t.name.toLowerCase() === trekName.toLowerCase() || t.name.toLowerCase().includes(trekName.toLowerCase()) || trekName.toLowerCase().includes(t.name.toLowerCase()));
+                if (match) {
+                    trekId = match.id;
+                    altitude = match.max_altitude_text || match.altitude || '';
+                    altitudeFt = match.max_altitude_ft || match.altitude_ft || 0;
+                    distance = match.distance_text || match.distance || '';
+                    difficulty = match.difficulty || 'Moderate';
+                    location = `${match.region}, ${match.country}`;
+                    image = match.image || '';
+                }
+            }
+
+            const payload = {
+                trek_id: trekId,
+                trek_name: trekName,
+                start_date: startDate,
+                end_date: endDate,
+                altitude: altitude,
+                altitude_ft: altitudeFt,
+                distance: distance,
+                difficulty: difficulty,
+                location: location,
+                image_url: image
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Adding...`;
+
+            try {
+                const res = await fetch('/api/user/achievements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    currentAchievements = data.achievements;
+                    renderAchievementsShowcase(currentAchievements);
+                    updateAchievementStats(currentAchievements);
+
+                    // Reset form
+                    document.getElementById('addAchievementForm').reset();
+                    document.getElementById('trekStartDisplayInput').value = '';
+                    document.getElementById('trekStartDateInput').value = '';
+                    document.getElementById('trekEndDisplayInput').value = '';
+                    document.getElementById('trekEndDateInput').value = '';
+                    document.getElementById('selectedTrekId').value = '';
+                    document.getElementById('selectedTrekAltitude').value = '';
+                    document.getElementById('selectedTrekAltitudeFt').value = '';
+                    document.getElementById('selectedTrekDistance').value = '';
+                    document.getElementById('selectedTrekDifficulty').value = '';
+                    document.getElementById('selectedTrekLocation').value = '';
+                    document.getElementById('selectedTrekImage').value = '';
+
+                    // Scroll to newly added card
+                    setTimeout(() => {
+                        const track = document.getElementById('achievementsHorizontalTrack');
+                        if (track) track.scrollTo({ left: 0, behavior: 'smooth' });
+                    }, 100);
+                } else {
+                    alert(data.error || 'Failed to add trek to achievements.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred while saving your trek.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-plus"></i> Add Trek`;
+            }
+        }
+
+        async function uploadCertificate(achievementId, inputEl) {
+            if (!inputEl.files || inputEl.files.length === 0) return;
+            const file = inputEl.files[0];
+            const actionsContainer = document.getElementById(`ach-actions-${achievementId}`);
+            if (actionsContainer) {
+                actionsContainer.style.opacity = '0.5';
+                actionsContainer.style.pointerEvents = 'none';
+            }
+
+            const formData = new FormData();
+            formData.append('certificate', file);
+
+            try {
+                const res = await fetch(`/api/user/achievements/${achievementId}/certificate`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    currentAchievements = data.achievements;
+                    renderAchievementsShowcase(currentAchievements);
+                    updateAchievementStats(currentAchievements);
+                } else {
+                    alert(data.error || 'Failed to upload certificate.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred during certificate upload.');
+            } finally {
+                if (actionsContainer) {
+                    actionsContainer.style.opacity = '';
+                    actionsContainer.style.pointerEvents = '';
+                }
+            }
+        }
+
+        async function deleteAchievement(id) {
+            if (!confirm('Are you sure you want to delete this trek from your achievements list?')) return;
+
+            try {
+                const res = await fetch(`/api/user/achievements/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    currentAchievements = data.achievements;
+                    renderAchievementsShowcase(currentAchievements);
+                    updateAchievementStats(currentAchievements);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderAchievementsShowcase(list) {
+            const track = document.getElementById('achievementsHorizontalTrack');
+            const countBadge = document.getElementById('achievementsCountBadge');
+            if (countBadge) countBadge.innerText = `${list.length} Treks`;
+            if (!track) return;
+
+            if (list.length === 0) {
+                track.innerHTML = `
+                    <div id="achEmptyState" class="ach-empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-mountain"></i></div>
+                        <h5>No Completed Treks Added Yet</h5>
+                        <p>Type a trek name above with your dates to record your first mountain expedition!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            track.innerHTML = list.map(ach => {
+                const trek = ALL_TREKS_DATA.find(t => t.id === ach.trek_id || t.name.toLowerCase() === (ach.trek_name || '').toLowerCase() || t.name.toLowerCase().includes((ach.trek_name || '').toLowerCase()) || (ach.trek_name || '').toLowerCase().includes(t.name.toLowerCase()));
+                
+                const locationText = ach.location || (trek ? `${trek.region}, ${trek.country}` : 'Himalayas');
+                const difficultyText = ach.difficulty || (trek ? trek.difficulty : 'Moderate');
+                const difficultySlug = ach.difficulty_slug || (trek ? trek.difficulty_slug : 'moderate');
+                const durationText = ach.duration_text || (trek ? (trek.duration_text || `${trek.duration_days} Days`) : 'N/A');
+                const distanceText = ach.distance_text || ach.distance || (trek ? (trek.distance_text || `${trek.distance_km} km`) : 'N/A');
+                const altitudeText = ach.altitude || (trek ? trek.max_altitude_text : 'N/A');
+                const seasonText = ach.best_season || (trek ? trek.best_season : '');
+                const highlights = (ach.highlights && ach.highlights.length > 0) ? ach.highlights : (trek && trek.highlights ? trek.highlights : []);
+
+                return `
+                    <div class="ach-horizontal-row-item" id="ach-card-${ach.id}">
+                        <!-- Top Header Line: Left Info + Right Actions -->
+                        <div class="ach-card-header">
+                            <div class="ach-header-left">
+                                <div class="ach-row-icon"><i class="fa-solid fa-mountain"></i></div>
+                                <div class="ach-title-wrap">
+                                    <div class="ach-name-row">
+                                        <h5 class="ach-row-name">${escapeHtml(ach.trek_name)}</h5>
+                                        <span class="ach-dates-chip" title="Expedition Dates">
+                                            <i class="fa-regular fa-calendar-days"></i> ${ach.start_date} to ${ach.end_date}
+                                        </span>
+                                    </div>
+                                    <span class="ach-row-loc"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(locationText)}</span>
+                                </div>
+                            </div>
+
+                            <!-- Right Action Buttons -->
+                            <div class="ach-row-actions" id="ach-actions-${ach.id}">
+                                ${ach.certificate_url ? `
+                                    <a href="${ach.certificate_url}" target="_blank" class="btn-cert-view" title="View/Download Certificate">
+                                        <i class="fa-solid fa-file-circle-check"></i> View Certificate
+                                    </a>
+                                    <label class="btn-cert-replace" title="Replace Certificate">
+                                        <input type="file" onchange="uploadCertificate(${ach.id}, this)" accept=".pdf,image/*" style="display:none;">
+                                        <i class="fa-solid fa-arrows-rotate"></i>
+                                    </label>
+                                ` : `
+                                    <label class="btn-cert-upload" title="Upload Trek Certificate (PDF/Image)">
+                                        <input type="file" onchange="uploadCertificate(${ach.id}, this)" accept=".pdf,image/*" style="display:none;">
+                                        <i class="fa-solid fa-file-arrow-up"></i> Upload Certificate
+                                    </label>
+                                `}
+
+                                <button type="button" class="btn-ach-delete-icon-only" onclick="deleteAchievement(${ach.id})" title="Delete from list">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Full Width Metrics Grid -->
+                        <div class="ach-metrics-grid">
+                            <div class="ach-metric-item ach-metric-duration">
+                                <span class="ach-m-icon"><i class="fa-regular fa-clock"></i></span>
+                                <div class="ach-m-info">
+                                    <span class="ach-m-label">Duration</span>
+                                    <strong class="ach-m-val">${escapeHtml(durationText)}</strong>
+                                </div>
+                            </div>
+
+                            <div class="ach-metric-item ach-metric-distance">
+                                <span class="ach-m-icon"><i class="fa-solid fa-route"></i></span>
+                                <div class="ach-m-info">
+                                    <span class="ach-m-label">Distance</span>
+                                    <strong class="ach-m-val">${escapeHtml(distanceText)}</strong>
+                                </div>
+                            </div>
+
+                            <div class="ach-metric-item ach-metric-altitude">
+                                <span class="ach-m-icon"><i class="fa-solid fa-mountain"></i></span>
+                                <div class="ach-m-info">
+                                    <span class="ach-m-label">Altitude</span>
+                                    <strong class="ach-m-val">${escapeHtml(altitudeText)}</strong>
+                                </div>
+                            </div>
+
+                            <div class="ach-metric-item ach-metric-difficulty">
+                                <span class="ach-m-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                                <div class="ach-m-info">
+                                    <span class="ach-m-label">Difficulty</span>
+                                    <strong class="ach-m-val">${escapeHtml(difficultyText)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAchievementStats(list) {
+            const maxAltEl = document.getElementById('achStatMaxAlt');
+            const highestTrekEl = document.getElementById('achStatHighestTrek');
+            const totalTreksEl = document.getElementById('achStatTotalTreks');
+
+            if (totalTreksEl) totalTreksEl.innerText = `${list.length} Completed`;
+
+            if (list.length === 0) {
+                if (maxAltEl) maxAltEl.innerText = '0 ft (0 m)';
+                if (highestTrekEl) highestTrekEl.innerText = 'None Yet';
+            } else {
+                let highest = list[0];
+                let maxFt = highest.altitude_ft || 0;
+                list.forEach(a => {
+                    const ft = a.altitude_ft || 0;
+                    if (ft > maxFt) {
+                        maxFt = ft;
+                        highest = a;
+                    }
+                });
+                if (maxAltEl) maxAltEl.innerText = highest.altitude || '12,500 ft (3,810 m)';
+                if (highestTrekEl) highestTrekEl.innerText = highest.trek_name || 'N/A';
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

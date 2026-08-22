@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trekkers Heaven - Famous Treks Explorer & Expeditions</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Trek Explorer CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treks.css') }}">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="trek-navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('treks') }}" class="nav-brand">
+                <span class="logo-icon"><i class="fa-solid fa-mountain-sun"></i></span>
+                <span class="logo-text">TREKKERS<span>HEAVEN</span></span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('treks') }}" class="nav-link active">Explore Treks</a>
+                <a href="#himalayas" onclick="filterByRegion('Uttarakhand')" class="nav-link">Uttarakhand</a>
+                <a href="#himachal" onclick="filterByRegion('Himachal Pradesh')" class="nav-link">Himachal</a>
+                <a href="#nepal" onclick="filterByRegion('Nepal Himalayas')" class="nav-link">Nepal</a>
+                <a href="#kashmir" onclick="filterByRegion('Jammu & Kashmir')" class="nav-link">Kashmir</a>
+            </div>
+
+            <div class="nav-auth-actions">
+                <!-- AI TREK GUIDE CHATBOT (To the left of Checklist button) -->
+                <div class="chatbot-dropdown-container">
+                    <button type="button" class="btn-nav-chatbot" id="trekChatbotBtn" onclick="toggleChatbotPopover(event)" title="AI Trek Assistant - Sherpa AI">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
+
+                    <!-- Chatbot Popover Window -->
+                    <div class="chatbot-popover" id="chatbotPopover">
+                        <div class="chatbot-popover-header">
+                            <div class="chatbot-header-info">
+                                <div class="chatbot-avatar-pulse">
+                                    <i class="fa-solid fa-robot"></i>
+                                    <span class="pulse-ring"></span>
+                                </div>
+                                <div class="chatbot-header-text">
+                                    <div class="chatbot-title-row">
+                                        <strong class="chatbot-title-name">Sherpa AI</strong>
+                                        <span class="chatbot-guide-badge">TREK GUIDE</span>
+                                    </div>
+                                    <span class="chatbot-status"><span class="status-dot"></span> Online | Smart Assistant</span>
+                                </div>
+                            </div>
+                            <div class="chatbot-header-actions">
+                                <button type="button" class="btn-clear-chat" onclick="clearChatbotHistory(event)" title="Clear Chat History">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button type="button" class="btn-close-chatbot" onclick="toggleChatbotPopover(event)" title="Close Chat">&times;</button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages Body -->
+                        <div class="chatbot-messages-body" id="chatbotMessagesBody"></div>
+
+                        <!-- Quick Suggestion Chips -->
+                        <div class="chatbot-suggestions-wrap" id="chatbotSuggestionsWrap">
+                            <div class="suggestions-chips-scroll">
+                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Compare Kedarkantha vs Brahmatal', event)">
+                                    ⚖️ Compare Treks
+                                </button>
+                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Best beginner treks under ₹10,000?', event)">
+                                    🏔️ Beginner Treks
+                                </button>
+                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('How to prevent Acute Mountain Sickness (AMS)?', event)">
+                                    💊 AMS Safety
+                                </button>
+                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('What are the best winter snow treks?', event)">
+                                    ❄️ Snow Treks
+                                </button>
+                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('What essential gear should I pack?', event)">
+                                    🎒 Packing Tips
+                                </button>
+                                <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('Recommend high pass crossover treks', event)">
+                                    ⚡ High Passes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Input Bar -->
+                        <div class="chatbot-input-row">
+                            <input type="text" id="chatbotInput" placeholder="Ask Sherpa AI anything about treks..." autocomplete="off" onkeydown="if(event.key==='Enter') sendChatbotMessage(event)">
+                            <button type="button" class="btn-chatbot-send" id="chatbotSendBtn" onclick="sendChatbotMessage(event)" title="Send message">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TREK PACKING CHECKLIST BUTTON (To the left of Saved button) -->
+                <div class="checklist-dropdown-container">
+                    <button type="button" class="btn-nav-checklist" id="trekChecklistBtn" onclick="toggleChecklistPopover()" title="Trek Packing Checklist & Essentials">
+                        <i class="fa-solid fa-list-check"></i>
+                    </button>
+
+                    <!-- Checklist Popover Dropdown -->
+                    <div class="checklist-popover" id="checklistPopover">
+                        <div class="checklist-popover-header">
+                            <div class="checklist-popover-title">
+                                <i class="fa-solid fa-clipboard-check checklist-icon-emerald"></i>
+                                <div>
+                                    <strong class="checklist-title-text">Trek Essentials Checklist</strong>
+                                    <span class="checklist-title-sub">Packing checklist for high-altitude treks</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close-checklist-popover" onclick="toggleChecklistPopover()" title="Close">&times;</button>
+                        </div>
+
+                        <!-- Progress Overview Bar -->
+                        <div class="checklist-progress-bar-wrap">
+                            <div class="checklist-progress-stats">
+                                <span id="checklistProgressText"><i class="fa-solid fa-box-open"></i> Packed: <strong>0</strong> of <strong>18</strong></span>
+                                <span class="checklist-progress-pct" id="checklistProgressPct">0%</span>
+                            </div>
+                            <div class="checklist-progress-track">
+                                <div class="checklist-progress-fill" id="checklistProgressFill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Category Tabs -->
+                        <div class="checklist-tabs">
+                            <button type="button" class="checklist-tab active" onclick="filterChecklistCategory('all', this, event)">
+                                <i class="fa-solid fa-layer-group"></i> All (<span id="count-tab-all">18</span>)
+                            </button>
+                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('gear', this, event)">
+                                <i class="fa-solid fa-mountain"></i> Gear
+                            </button>
+                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('clothing', this, event)">
+                                <i class="fa-solid fa-shirt"></i> Clothing
+                            </button>
+                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('medical', this, event)">
+                                <i class="fa-solid fa-kit-medical"></i> Medical
+                            </button>
+                            <button type="button" class="checklist-tab" onclick="filterChecklistCategory('essentials', this, event)">
+                                <i class="fa-solid fa-compass"></i> Docs & Tools
+                            </button>
+                        </div>
+
+                        <!-- Checklist Items List -->
+                        <div class="checklist-items-scroll" id="checklistItemsList">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+
+                        <!-- Quick Add Custom Item Form -->
+                        <div class="checklist-add-row">
+                            <input type="text" id="customChecklistInput" placeholder="Add custom item (e.g. GoPro, Power bank)..." maxlength="50" onkeydown="if(event.key==='Enter') addCustomChecklistItem(event)">
+                            <button type="button" class="btn-add-checklist-item" onclick="addCustomChecklistItem(event)" title="Add Item">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="checklist-popover-footer">
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn-checklist-secondary" onclick="checkAllChecklistItems(event)">
+                                    <i class="fa-solid fa-check-double"></i> Check All
+                                </button>
+                                <button type="button" class="btn-checklist-secondary" onclick="resetChecklistItems(event)">
+                                    <i class="fa-solid fa-rotate-left"></i> Uncheck
+                                </button>
+                            </div>
+                            <button type="button" class="btn-checklist-secondary" onclick="restoreDefaultChecklistItems(event)" title="Restore default essentials list">
+                                <i class="fa-solid fa-arrow-rotate-right"></i> Restore Defaults
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SAVED TREKS HEART BUTTON (To the left of Profile) -->
+                <div class="saved-treks-dropdown-container">
+                    <button type="button" class="btn-nav-heart" id="savedTreksBtn" onclick="toggleSavedTreksPopover()" title="Saved Treks / Wishlist">
+                        <i class="fa-solid fa-heart"></i>
+                        <span class="saved-badge-count" id="savedTreksBadge">0</span>
+                    </button>
+
+                    <!-- Saved Treks Popover Dropdown -->
+                    <div class="saved-treks-popover" id="savedTreksPopover">
+                        <div class="saved-popover-header">
+                            <div class="saved-popover-title">
+                                <i class="fa-solid fa-heart heart-icon-rose"></i>
+                                <span>Saved Treks</span>
+                                <span class="saved-popover-pill" id="savedPopoverCount">0</span>
+                            </div>
+                            <button type="button" class="btn-close-saved-popover" onclick="toggleSavedTreksPopover()" title="Close">&times;</button>
+                        </div>
+
+                        <div class="saved-popover-scroll" id="savedTreksList">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+
+                        <div class="saved-popover-footer" id="savedPopoverFooter" style="display: none;">
+                            <button type="button" class="btn-clear-all-saved" onclick="clearAllSavedTreks()">
+                                <i class="fa-regular fa-trash-can"></i> Clear All Saved
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {% if user %}
+                    <!-- User Profile Option (Replaces Register button when logged in) -->
+                    <div class="profile-dropdown-container">
+                        <button type="button" class="btn-profile-circle" id="profileDropdownBtn" onclick="toggleProfileMenu()" title="{{ user.name }} - Account Profile">
+                            <span class="user-avatar-circle">{{ user.name[:1].upper() }}</span>
+                        </button>
+
+                        <div class="profile-popover-menu" id="profilePopoverMenu">
+                            <div class="popover-user-info">
+                                <div class="popover-avatar">{{ user.name[:2].upper() }}</div>
+                                <div class="popover-details">
+                                    <strong class="popover-name">{{ user.name }}</strong>
+                                    <span class="popover-email">{{ user.email }}</span>
+                                </div>
+                            </div>
+                            <div class="popover-divider"></div>
+                            <a href="{{ url_for('dashboard') }}" class="popover-item">
+                                <i class="fa-solid fa-id-card"></i> My Dashboard
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="popover-item popover-danger">
+                                <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-nav-ghost">Log In</a>
+                    <a href="{{ url_for('register') }}" class="btn-nav-primary">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header Banner -->
+    <header class="explorer-hero">
+        <div class="hero-content">
+            <span class="hero-badge"><i class="fa-solid fa-compass"></i> Discover Iconic Summits & High Passes</span>
+            <h1 class="hero-title">Concord Your Dream Summits</h1>
+        </div>
+    </header>
+
+    <!-- Main Explorer Section -->
+    <main class="explorer-container">
+        <div class="explorer-layout">
+            
+            <!-- LEFT SIDEBAR: Filters Dropdown Menu -->
+            <aside class="sidebar-filters" id="sidebarFilters">
+                <div class="sidebar-header">
+                    <div class="sidebar-title-row">
+                        <span class="sidebar-icon"><i class="fa-solid fa-sliders"></i></span>
+                        <h2 class="sidebar-title">Filter Treks</h2>
+                    </div>
+                    <button type="button" class="btn-reset-filters" id="resetFiltersBtn" onclick="resetAllFilters()">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                </div>
+
+                <!-- Search Input Filter -->
+                <div class="filter-box">
+                    <label class="filter-label" for="searchFilter">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search Trek
+                    </label>
+                    <div class="filter-input-wrap">
+                        <input type="text" id="searchFilter" class="filter-input" placeholder="Search by name, peak, place...">
+                    </div>
+                </div>
+
+                <!-- Best Month Filter Dropdown -->
+                <div class="filter-box">
+                    <label class="filter-label" for="monthFilter">
+                        <i class="fa-regular fa-calendar"></i> Best Month
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="monthFilter" class="filter-select">
+                            <option value="all">All Months</option>
+                            <option value="January">January (Winter Snow)</option>
+                            <option value="February">February (Winter Snow)</option>
+                            <option value="March">March (Early Spring)</option>
+                            <option value="April">April (Spring Bloom)</option>
+                            <option value="May">May (Summer Mountain)</option>
+                            <option value="June">June (Summer Crossover)</option>
+                            <option value="July">July (Monsoon Greenery)</option>
+                            <option value="August">August (Alpine Flowers)</option>
+                            <option value="September">September (Post-Monsoon Clear)</option>
+                            <option value="October">October (Crisp Autumn)</option>
+                            <option value="November">November (Late Autumn)</option>
+                            <option value="December">December (Winter Wonderland)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- Difficulty Level Filter Dropdown -->
+                <div class="filter-box">
+                    <label class="filter-label" for="difficultyFilter">
+                        <i class="fa-solid fa-gauge-high"></i> Difficulty Level
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="difficultyFilter" class="filter-select">
+                            <option value="all">All Difficulties</option>
+                            <option value="easy">Easy-Moderate (Beginner Friendly)</option>
+                            <option value="moderate">Moderate (Some Trail Experience)</option>
+                            <option value="difficult">Difficult (High Altitude & Endurance)</option>
+                            <option value="expert">Expert (Extreme / Sub-Zero)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- Region Filter Dropdown -->
+                <div class="filter-box">
+                    <label class="filter-label" for="regionFilter">
+                        <i class="fa-solid fa-map-location-dot"></i> Region / Mountain Range
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="regionFilter" class="filter-select">
+                            <option value="all">All Regions</option>
+                            <option value="Uttarakhand">Uttarakhand, India</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh, India</option>
+                            <option value="Jammu & Kashmir">Jammu & Kashmir</option>
+                            <option value="Ladakh">Ladakh (Cold Desert)</option>
+                            <option value="Nepal Himalayas">Nepal Himalayas</option>
+                            <option value="International (Alps)">International (Alps / Europe)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- Duration Filter Dropdown -->
+                <div class="filter-box">
+                    <label class="filter-label" for="durationFilter">
+                        <i class="fa-regular fa-clock"></i> Duration
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="durationFilter" class="filter-select">
+                            <option value="all">Any Duration</option>
+                            <option value="short">Short (1 - 5 Days)</option>
+                            <option value="medium">Medium (6 - 8 Days)</option>
+                            <option value="long">Long Expedition (9 - 14+ Days)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <!-- Season Filter Dropdown -->
+                <div class="filter-box">
+                    <label class="filter-label" for="seasonFilter">
+                        <i class="fa-solid fa-sun-plant-wilt"></i> Season
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="seasonFilter" class="filter-select">
+                            <option value="all">All Seasons</option>
+                            <option value="Winter">❄️ Winter</option>
+                            <option value="Spring">🌸 Spring</option>
+                            <option value="Summer">☀️ Summer</option>
+                            <option value="Monsoon">🌧️ Monsoon</option>
+                            <option value="Autumn">🍂 Autumn</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT CONTENT AREA: Trek Cards Grid -->
+            <section class="treks-content-area">
+                
+                <!-- Results Bar & Sorter -->
+                <div class="results-header-bar">
+                    <div class="results-count-wrap">
+                        <span class="results-count" id="resultsCount">Showing <strong>{{ treks|length }}</strong> Iconic Treks</span>
+                        <div class="active-tag-list" id="activeFilterTags"></div>
+                    </div>
+                    
+                    <div class="sort-wrapper">
+                        <label for="sortSelector" class="sort-label">Sort by:</label>
+                        <select id="sortSelector" class="sort-select" onchange="applyFilters()">
+                            <option value="featured">All Treks</option>
+                            <option value="altitude-desc">Altitude: High to Low</option>
+                            <option value="altitude-asc">Altitude: Low to High</option>
+                            <option value="duration-asc">Duration: Short to Long</option>
+                            <option value="duration-desc">Duration: Long to Short</option>
+                            <option value="rating">Highest Rated</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Empty State (Hidden by default) -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon"><i class="fa-solid fa-person-hiking"></i></div>
+                    <h3>No Treks Found</h3>
+                    <p>No treks matched your current filter criteria. Try adjusting your filters or resetting.</p>
+                    <button class="btn btn-primary" onclick="resetAllFilters()" style="width: auto; margin-top: 14px;">Reset All Filters</button>
+                </div>
+
+                <!-- Trek Grid Container -->
+                <div class="treks-grid" id="treksGrid">
+                    {% for trek in treks %}
+                        <article class="trek-card" 
+                            data-id="{{ trek.id }}"
+                            data-name="{{ trek.name|lower }}"
+                            data-region="{{ trek.region }}"
+                            data-difficulty="{{ trek.difficulty_slug }}"
+                            data-months="{{ trek.best_months|join(',') }}"
+                            data-season="{{ trek.best_season }}"
+                            data-days="{{ trek.duration_days }}"
+                            data-altitude="{{ trek.max_altitude_ft }}"
+                            data-rating="{{ trek.rating }}"
+                            onclick="openTrekModal('{{ trek.id }}')"
+                        >
+                            <div class="card-media">
+                                <img src="{{ trek.image }}" alt="{{ trek.name }}" class="trek-card-img" loading="lazy">
+                                <div class="card-badge-top">
+                                    <span class="trek-badge">{{ trek.badge }}</span>
+                                    <span class="rating-badge"><i class="fa-solid fa-star"></i> {{ trek.rating }}</span>
+                                </div>
+                                <div class="card-gradient-overlay"></div>
+                                <div class="card-difficulty-tag diff-{{ trek.difficulty_slug }}">
+                                    {{ trek.difficulty }}
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="card-region-row">
+                                    <span class="card-region"><i class="fa-solid fa-location-dot"></i> {{ trek.region }}, {{ trek.country }}</span>
+                                    <button type="button" class="btn-card-save-heart" id="cardSaveHeart-{{ trek.id }}" onclick="event.stopPropagation(); toggleSaveTrek('{{ trek.id }}')" title="Save to Wishlist">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                </div>
+                                
+                                <h3 class="card-title">{{ trek.name }}</h3>
+
+                                <!-- 4-Column Key Metrics Grid -->
+                                <div class="metrics-grid">
+                                    <div class="metric-item">
+                                        <span class="metric-icon"><i class="fa-regular fa-clock"></i></span>
+                                        <div class="metric-info">
+                                            <span class="metric-label">Duration</span>
+                                            <strong class="metric-val">{{ trek.duration_days }} Days</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="metric-item">
+                                        <span class="metric-icon"><i class="fa-solid fa-route"></i></span>
+                                        <div class="metric-info">
+                                            <span class="metric-label">Distance</span>
+                                            <strong class="metric-val">{{ trek.distance_km }} km</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="metric-item">
+                                        <span class="metric-icon"><i class="fa-solid fa-mountain"></i></span>
+                                        <div class="metric-info">
+                                            <span class="metric-label">Altitude</span>
+                                            <strong class="metric-val">{{ "{:,}".format(trek.max_altitude_ft) }} ft</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="metric-item">
+                                        <span class="metric-icon"><i class="fa-regular fa-calendar-check"></i></span>
+                                        <div class="metric-info">
+                                            <span class="metric-label">Best Season</span>
+                                            <strong class="metric-val">{{ trek.best_season }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Highlight Tags -->
+                                <div class="highlight-tags">
+                                    {% for tag in trek.highlights[:3] %}
+                                        <span class="htag">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Card Footer -->
+                                <div class="card-footer">
+                                    <div class="card-price-wrap">
+                                        <strong class="price-val">{{ trek.price }}</strong>
+                                    </div>
+                                    <button type="button" class="btn-card-view" onclick="event.stopPropagation(); openTrekModal('{{ trek.id }}')">
+                                        View Details <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Mobile App-Style Bottom Navigation Bar (Visible only on mobile screens <= 768px) -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
+        <a href="#treksExplorerSection" class="mobile-nav-item active" onclick="scrollToTreksExplorer(event)">
+            <i class="fa-solid fa-mountain-sun"></i>
+            <span>Treks</span>
+        </a>
+        <button type="button" class="mobile-nav-item mobile-ai-nav-item" onclick="toggleChatbotPopover(event)">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Sherpa AI</span>
+        </button>
+        <button type="button" class="mobile-nav-item" onclick="toggleChecklistPopover(event)">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Checklist</span>
+        </button>
+        <button type="button" class="mobile-nav-item" onclick="toggleSavedTreksPopover(event)">
+            <i class="fa-solid fa-heart"></i>
+            <span>Saved</span>
+            <span class="mobile-saved-badge" id="mobileSavedBadge">0</span>
+        </button>
+        <a href="{{ url_for('dashboard') if user else url_for('login') }}" class="mobile-nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>{{ 'Profile' if user else 'Login' }}</span>
+        </a>
+    </nav>
+
+    <!-- Detailed Trek Modal Popup -->
+    <div class="modal-overlay" id="trekDetailModal" onclick="if(event.target === this) closeTrekModal()">
+        <div class="modal-card trek-modal-card">
+            <div class="trek-modal-body" id="trekModalContent">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Pass Treks Data to Frontend JS -->
+    <script>
+        const INITIAL_TREKS_DATA = {{ treks|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/treks.js') }}"></script>
+</body>
+</html>
