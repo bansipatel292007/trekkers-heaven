@@ -1,14 +1,23 @@
 import os
 import re
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 import database
 import treks_data
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
+
+app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static', template_folder=TEMPLATES_DIR)
 app.secret_key = os.environ.get('SECRET_KEY', 'super-secret-auth-key-change-in-production-2026')
 app.permanent_session_lifetime = timedelta(days=7)
+
+# Explicit static route for Vercel serverless environment
+@app.route('/static/<path:filename>')
+def serve_vercel_static(filename):
+    return send_from_directory(STATIC_DIR, filename)
 
 # Initialize database tables on startup
 database.init_db()
