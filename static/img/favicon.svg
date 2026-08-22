@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0c1b"/>
+      <stop offset="100%" stop-color="#1e1538"/>
+    </linearGradient>
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="mountainGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="50%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#581c87"/>
+    </linearGradient>
+    <linearGradient id="mountainGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="60%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="snowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Circular Base Badge -->
+  <circle cx="32" cy="32" r="30" fill="url(#bgGrad)" stroke="#a855f7" stroke-width="2.5" stroke-opacity="0.6"/>
+
+  <!-- Golden Sun Rising Behind Peaks -->
+  <circle cx="43" cy="20" r="8.5" fill="url(#sunGrad)"/>
+
+  <!-- Back Mountain Peak (Cyan Gradient) -->
+  <polygon points="12,50 44,18 56,50" fill="url(#mountainGrad2)"/>
+  <!-- Back Peak Snow Cap -->
+  <polygon points="44,18 39,24 43,26 44,23 46,26 50,24" fill="url(#snowGrad)" opacity="0.9"/>
+
+  <!-- Front Mountain Main Summit (Purple Gradient) -->
+  <polygon points="6,50 26,14 48,50" fill="url(#mountainGrad1)"/>
+  <!-- Front Summit Snow Cap with Ridge Shadow -->
+  <polygon points="26,14 20,24 24,27 26,22 28,27 33,24" fill="url(#snowGrad)"/>
+  <polygon points="26,14 28,27 33,24 48,50 26,50" fill="#000000" opacity="0.18"/>
+
+  <!-- Star / Compass Accent Sparkle -->
+  <path d="M 32,8 L 33.2,11.2 L 36.4,12.4 L 33.2,13.6 L 32,16.8 L 30.8,13.6 L 27.6,12.4 L 30.8,11.2 Z" fill="#fbbf24"/>
+</svg>

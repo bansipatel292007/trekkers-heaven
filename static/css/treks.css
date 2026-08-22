@@ -4988,6 +4988,43 @@ body {
         padding: 7px 14px !important;
     }
 
+    /* Dashboard Mobile optimization */
+    .dashboard-main-wrap {
+        padding-top: 16px !important;
+        padding-bottom: calc(85px + env(safe-area-inset-bottom, 15px)) !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    .dashboard-sidebar {
+        padding: 16px !important;
+        border-radius: 16px !important;
+    }
+
+    .sidebar-nav-tabs {
+        display: flex !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        gap: 8px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .sidebar-nav-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .profile-tab-btn {
+        flex-shrink: 0 !important;
+        padding: 10px 14px !important;
+        font-size: 0.82rem !important;
+    }
+
+    .stat-cards-grid, .achievement-stats-row {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
     /* Modal Mobile optimization */
     .trek-modal-card {
         width: 100vw !important;

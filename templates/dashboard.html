@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Trekker Profile & Dashboard - Trekkers Heaven</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,8 +55,8 @@
     </div>
 
     <!-- Main Dashboard Section -->
-    <main class="explorer-container" style="padding-top: 32px; padding-bottom: 80px;">
-        <div class="dashboard-two-col-layout" style="display: grid; grid-template-columns: 290px 1fr; gap: 24px; align-items: start; margin: 0;">
+    <main class="explorer-container dashboard-main-wrap">
+        <div class="dashboard-two-col-layout">
             
             <!-- LEFT SIDEBAR CARD -->
             <aside class="dashboard-sidebar">
