@@ -250,56 +250,52 @@
         </div>
     </header>
 
-    <!-- MOBILE-ONLY SEARCH & STORY CATEGORIES CAROUSEL (Appears only on mobile screens <= 768px) -->
+    <!-- MOBILE-ONLY SEARCH & QUICK FILTER DOCK (Visible only on mobile <= 768px) -->
     <div class="mobile-stories-wrapper" id="mobileStoriesWrapper">
+        <!-- Search Input Bar -->
         <div class="mobile-search-bar-wrap">
             <div class="mobile-search-inner">
                 <i class="fa-solid fa-magnifying-glass mobile-search-icon"></i>
-                <input type="text" id="mobileSearchInput" placeholder="Search 30+ summits, passes & peaks..." oninput="syncMobileSearch(this.value)">
-                <button type="button" class="mobile-filter-drawer-toggle" onclick="toggleMobileFilterDrawer()" title="Filter Treks">
+                <input type="text" id="mobileSearchInput" placeholder="Search 30+ summits, peaks, altitude..." oninput="syncMobileSearch(this.value)">
+                <button type="button" class="mobile-filter-drawer-toggle" onclick="toggleMobileFilterDrawer()" title="All Filters">
                     <i class="fa-solid fa-sliders"></i>
+                    <span>Filters</span>
                 </button>
             </div>
         </div>
 
-        <div class="mobile-category-stories-scroll">
-            <button type="button" class="mobile-story-item active" onclick="filterByRegion('all', this)">
-                <div class="story-ring"><i class="fa-solid fa-mountain-sun"></i></div>
-                <span>All (30)</span>
+        <!-- Horizontal Swipeable Region Tabs -->
+        <div class="mobile-region-tabs-scroll">
+            <button type="button" class="mobile-region-pill active" onclick="filterByRegion('all', this)">
+                <i class="fa-solid fa-mountain-sun"></i> All Treks <span class="pill-count">30</span>
             </button>
-            <button type="button" class="mobile-story-item" onclick="filterByRegion('Uttarakhand', this)">
-                <div class="story-ring"><i class="fa-solid fa-tree"></i></div>
-                <span>Uttarakhand</span>
+            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Uttarakhand', this)">
+                <i class="fa-solid fa-tree"></i> Uttarakhand
             </button>
-            <button type="button" class="mobile-story-item" onclick="filterByRegion('Himachal Pradesh', this)">
-                <div class="story-ring"><i class="fa-solid fa-snowflake"></i></div>
-                <span>Himachal</span>
+            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Himachal Pradesh', this)">
+                <i class="fa-solid fa-snowflake"></i> Himachal
             </button>
-            <button type="button" class="mobile-story-item" onclick="filterByRegion('Ladakh', this)">
-                <div class="story-ring"><i class="fa-solid fa-crown"></i></div>
-                <span>Ladakh</span>
+            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Ladakh', this)">
+                <i class="fa-solid fa-crown"></i> Ladakh
             </button>
-            <button type="button" class="mobile-story-item" onclick="filterByRegion('Jammu & Kashmir', this)">
-                <div class="story-ring"><i class="fa-solid fa-water"></i></div>
-                <span>Kashmir</span>
+            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Jammu & Kashmir', this)">
+                <i class="fa-solid fa-water"></i> Kashmir
             </button>
-            <button type="button" class="mobile-story-item" onclick="filterByRegion('Nepal Himalayas', this)">
-                <div class="story-ring"><i class="fa-solid fa-mountain"></i></div>
-                <span>Nepal</span>
+            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Nepal Himalayas', this)">
+                <i class="fa-solid fa-mountain"></i> Nepal
             </button>
-            <button type="button" class="mobile-story-item" onclick="filterByRegion('International (Alps)', this)">
-                <div class="story-ring"><i class="fa-solid fa-earth-americas"></i></div>
-                <span>Global</span>
+            <button type="button" class="mobile-region-pill" onclick="filterByRegion('International (Alps)', this)">
+                <i class="fa-solid fa-earth-americas"></i> Global
             </button>
         </div>
 
-        <!-- Quick Difficulty Chips on Mobile -->
+        <!-- Horizontal Swipeable Difficulty Chips -->
         <div class="mobile-quick-difficulty-row">
-            <button type="button" class="mobile-diff-chip active" onclick="filterByDifficultyQuick('all', this)">All</button>
-            <button type="button" class="mobile-diff-chip easy" onclick="filterByDifficultyQuick('easy', this)">🟢 Easy</button>
+            <button type="button" class="mobile-diff-chip active" onclick="filterByDifficultyQuick('all', this)">All Difficulties</button>
+            <button type="button" class="mobile-diff-chip easy" onclick="filterByDifficultyQuick('easy', this)">🟢 Beginner</button>
             <button type="button" class="mobile-diff-chip moderate" onclick="filterByDifficultyQuick('moderate', this)">🟡 Moderate</button>
             <button type="button" class="mobile-diff-chip difficult" onclick="filterByDifficultyQuick('difficult', this)">🟠 Difficult</button>
-            <button type="button" class="mobile-diff-chip expert" onclick="filterByDifficultyQuick('expert', this)">🔴 Expert (6,000m+)</button>
+            <button type="button" class="mobile-diff-chip expert" onclick="filterByDifficultyQuick('expert', this)">🔴 6,000m+ Peak</button>
         </div>
     </div>
 

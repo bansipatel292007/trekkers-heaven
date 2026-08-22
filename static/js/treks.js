@@ -350,9 +350,9 @@ function filterByRegion(region, element) {
         regionSelect.value = region === 'all' ? 'all' : region;
     }
     
-    // Update active mobile story item
+    // Update active mobile region pill
     if (element) {
-        document.querySelectorAll('.mobile-story-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.mobile-region-pill').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
     }
     
@@ -399,7 +399,7 @@ function resetAllFilters() {
     // Reset mobile search & chips
     const mobSearch = document.getElementById('mobileSearchInput');
     if (mobSearch) mobSearch.value = '';
-    document.querySelectorAll('.mobile-story-item').forEach((el, idx) => {
+    document.querySelectorAll('.mobile-region-pill').forEach((el, idx) => {
         el.classList.toggle('active', idx === 0);
     });
     document.querySelectorAll('.mobile-diff-chip').forEach((el, idx) => {
