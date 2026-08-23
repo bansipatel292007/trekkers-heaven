@@ -644,6 +644,44 @@ body {
 /* ==========================================
    AI Trek Guide Chatbot Button & Popover in Navbar
    ========================================== */
+.fab-ai-chatbot {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 1900;
+    box-shadow: 0 8px 25px rgba(147, 51, 234, 0.55), 0 0 15px rgba(99, 102, 241, 0.35);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-ai-chatbot:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 12px 30px rgba(147, 51, 234, 0.7);
+}
+
+.fab-ai-pulse {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #0e0c16;
+    box-shadow: 0 0 8px #22c55e;
+    animation: pulseGlow 2s infinite;
+}
+
 .chatbot-dropdown-container {
     position: relative;
 }
@@ -1585,16 +1623,26 @@ body {
     padding: 26px 24px 18px;
     text-align: center;
     border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .hero-content {
     max-width: 760px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .hero-badge {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     background: rgba(124, 92, 252, 0.12);
     color: #a78bfa;
@@ -1602,7 +1650,7 @@ body {
     font-weight: 700;
     padding: 4px 12px;
     border-radius: var(--radius-full);
-    margin-bottom: 10px;
+    margin: 0 auto 10px auto;
     border: 1px solid rgba(124, 92, 252, 0.25);
 }
 
@@ -1610,6 +1658,12 @@ body {
     font-size: 2.1rem;
     font-weight: 800;
     letter-spacing: -0.6px;
+    margin: 0 auto;
+    text-align: center;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ffffff 40%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-bottom: 8px;
 }
 
@@ -5142,13 +5196,14 @@ body {
         color: #f87171;
     }
 
-    /* Mobile Hero Banner - Conquer Your Dream Summits */
+    /* Mobile Hero Banner - Centered */
     .explorer-hero {
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important;
-        padding: 16px 14px 10px 14px !important;
-        text-align: left !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 16px 14px 12px 14px !important;
+        text-align: center !important;
         background: transparent !important;
         width: 100% !important;
         box-sizing: border-box !important;
@@ -5158,36 +5213,79 @@ body {
     .explorer-hero .hero-content {
         width: 100% !important;
         max-width: 100% !important;
-        text-align: left !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
     }
 
     .explorer-hero .hero-badge {
         display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         font-size: 0.65rem !important;
-        padding: 3px 8px !important;
+        padding: 3px 10px !important;
         border-radius: 6px !important;
         background: rgba(124, 92, 252, 0.15) !important;
         color: #c4b5fd !important;
         border: 1px solid rgba(124, 92, 252, 0.25) !important;
-        margin-bottom: 6px !important;
+        margin: 0 auto 8px auto !important;
     }
 
     .explorer-hero .hero-title {
-        font-size: 1.45rem !important;
+        font-size: 1.40rem !important;
         font-weight: 800 !important;
         color: #ffffff !important;
         background: linear-gradient(135deg, #ffffff 40%, #c4b5fd 100%) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         line-height: 1.25 !important;
-        margin: 0 0 6px 0 !important;
+        margin: 0 auto !important;
+        text-align: center !important;
     }
 
-    .explorer-hero .hero-subtitle {
-        font-size: 0.76rem !important;
-        color: #94a3b8 !important;
-        line-height: 1.4 !important;
-        margin: 0 !important;
+    /* Floating AI Chatbot Button on Mobile (Bottom-Right FAB) */
+    .fab-ai-chatbot {
+        position: fixed !important;
+        bottom: 76px !important;
+        right: 16px !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%) !important;
+        color: #ffffff !important;
+        border: 2px solid rgba(255, 255, 255, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.2rem !important;
+        cursor: pointer !important;
+        z-index: 1900 !important;
+        box-shadow: 0 6px 22px rgba(147, 51, 234, 0.55), 0 0 14px rgba(99, 102, 241, 0.35) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .fab-ai-chatbot:active {
+        transform: scale(0.90) !important;
+    }
+
+    .fab-ai-pulse {
+        position: absolute !important;
+        top: -2px !important;
+        right: -2px !important;
+        width: 11px !important;
+        height: 11px !important;
+        border-radius: 50% !important;
+        background: #22c55e !important;
+        border: 2px solid #0e0c16 !important;
+        box-shadow: 0 0 8px #22c55e !important;
+        animation: pulseGlow 2s infinite !important;
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.25); opacity: 0.75; }
     }
 
     .trek-navbar {
