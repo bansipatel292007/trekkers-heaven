@@ -336,68 +336,71 @@
 
                 <!-- TAB 2: Achievements -->
                 <div class="dash-tab-pane" id="tab-achievements">
-                    <div class="pane-header">
-                        <h3 class="pane-title">Achievements</h3>
+                    <!-- Separate Achievements Header & Stats Summary Card -->
+                    <div class="achievements-summary-card">
+                        <div class="pane-header">
+                            <h3 class="pane-title">Achievements</h3>
+                        </div>
+
+                        <!-- Stats Matrix (Full-Width Symmetrical Cards) -->
+                        <div class="achievement-stats-row">
+                            <!-- Stat 1: Max Altitude -->
+                            <div class="ach-stat-card">
+                                <span class="ach-stat-icon ach-icon-purple"><i class="fa-solid fa-mountain-sun"></i></span>
+                                <div class="ach-stat-info">
+                                    <span class="ach-stat-label">Max Altitude</span>
+                                    <strong id="achStatMaxAlt" class="ach-stat-val">
+                                        {% if achievements and achievements|length > 0 %}
+                                            {% set highest = namespace(ft=0, str='0 ft (0 m)', name='None Yet') %}
+                                            {% for a in achievements %}
+                                                {% if a.altitude_ft and a.altitude_ft > highest.ft %}
+                                                    {% set highest.ft = a.altitude_ft %}
+                                                    {% set highest.str = a.altitude %}
+                                                    {% set highest.name = a.trek_name %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ highest.str if highest.ft > 0 else (achievements[0].altitude or '0 ft (0 m)') }}
+                                        {% else %}
+                                            0 ft (0 m)
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <!-- Stat 2: Highest Trek -->
+                            <div class="ach-stat-card">
+                                <span class="ach-stat-icon ach-icon-gold"><i class="fa-solid fa-trophy"></i></span>
+                                <div class="ach-stat-info">
+                                    <span class="ach-stat-label">Highest Trek</span>
+                                    <strong id="achStatHighestTrek" class="ach-stat-val">
+                                        {% if achievements and achievements|length > 0 %}
+                                            {% set highest = namespace(ft=0, name=achievements[0].trek_name) %}
+                                            {% for a in achievements %}
+                                                {% if a.altitude_ft and a.altitude_ft > highest.ft %}
+                                                    {% set highest.ft = a.altitude_ft %}
+                                                    {% set highest.name = a.trek_name %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ highest.name }}
+                                        {% else %}
+                                            None Yet
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <!-- Stat 3: Total Treks -->
+                            <div class="ach-stat-card">
+                                <span class="ach-stat-icon ach-icon-cyan"><i class="fa-solid fa-person-hiking"></i></span>
+                                <div class="ach-stat-info">
+                                    <span class="ach-stat-label">Total Treks</span>
+                                    <strong id="achStatTotalTreks" class="ach-stat-val">{{ achievements|length if achievements else 0 }} Completed</strong>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Sabse Upar: Stats Matrix -->
-                    <div class="achievement-stats-row">
-                        <!-- Stat 1: Max Altitude -->
-                        <div class="ach-stat-card">
-                            <span class="ach-stat-icon ach-icon-purple"><i class="fa-solid fa-mountain-sun"></i></span>
-                            <div class="ach-stat-info">
-                                <span class="ach-stat-label">Max Altitude</span>
-                                <strong id="achStatMaxAlt" class="ach-stat-val">
-                                    {% if achievements and achievements|length > 0 %}
-                                        {% set highest = namespace(ft=0, str='0 ft (0 m)', name='None Yet') %}
-                                        {% for a in achievements %}
-                                            {% if a.altitude_ft and a.altitude_ft > highest.ft %}
-                                                {% set highest.ft = a.altitude_ft %}
-                                                {% set highest.str = a.altitude %}
-                                                {% set highest.name = a.trek_name %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        {{ highest.str if highest.ft > 0 else (achievements[0].altitude or '0 ft (0 m)') }}
-                                    {% else %}
-                                        0 ft (0 m)
-                                    {% endif %}
-                                </strong>
-                            </div>
-                        </div>
-
-                        <!-- Stat 2 (Between those 2): Highest Altitude Trek Name -->
-                        <div class="ach-stat-card">
-                            <span class="ach-stat-icon ach-icon-gold"><i class="fa-solid fa-trophy"></i></span>
-                            <div class="ach-stat-info">
-                                <span class="ach-stat-label">Highest Trek</span>
-                                <strong id="achStatHighestTrek" class="ach-stat-val">
-                                    {% if achievements and achievements|length > 0 %}
-                                        {% set highest = namespace(ft=0, name=achievements[0].trek_name) %}
-                                        {% for a in achievements %}
-                                            {% if a.altitude_ft and a.altitude_ft > highest.ft %}
-                                                {% set highest.ft = a.altitude_ft %}
-                                                {% set highest.name = a.trek_name %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        {{ highest.name }}
-                                    {% else %}
-                                        None Yet
-                                    {% endif %}
-                                </strong>
-                            </div>
-                        </div>
-
-                        <!-- Stat 3: Total Treks -->
-                        <div class="ach-stat-card">
-                            <span class="ach-stat-icon ach-icon-cyan"><i class="fa-solid fa-person-hiking"></i></span>
-                            <div class="ach-stat-info">
-                                <span class="ach-stat-label">Total Treks</span>
-                                <strong id="achStatTotalTreks" class="ach-stat-val">{{ achievements|length if achievements else 0 }} Completed</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Treks Add Karne Ka Option (Positioned at the Top) -->
+                    <!-- Treks Add Karne Ka Option (Positioned at the Top as Distinct Card) -->
                     <div class="add-trek-achievement-card">
                         <div class="add-trek-card-header">
                             <span class="add-trek-header-icon"><i class="fa-solid fa-mountain-sun"></i></span>
@@ -547,15 +550,17 @@
                                         <div class="ach-header-left">
                                             <div class="ach-row-icon"><i class="fa-solid fa-mountain"></i></div>
                                             <div class="ach-title-wrap">
-                                                <div class="ach-name-row">
-                                                    <h5 class="ach-row-name">{{ ach.trek_name }}</h5>
-                                                    <span class="ach-dates-chip" title="Expedition Dates">
-                                                        <i class="fa-regular fa-calendar-days"></i> {{ ach.start_date }} to {{ ach.end_date }}
-                                                    </span>
-                                                </div>
+                                                <h5 class="ach-row-name">{{ ach.trek_name }}</h5>
                                                 {% if ach.location %}
-                                                <span class="ach-row-loc"><i class="fa-solid fa-location-dot"></i> {{ ach.location }}</span>
+                                                    <span class="ach-row-loc"><i class="fa-solid fa-location-dot"></i> {{ ach.location }}</span>
                                                 {% endif %}
+                                                {% set start_parts = ach.start_date.split('-') if ach.start_date else [] %}
+                                                {% set end_parts = ach.end_date.split('-') if ach.end_date else [] %}
+                                                {% set formatted_start = (start_parts[2] ~ '-' ~ start_parts[1] ~ '-' ~ start_parts[0]) if start_parts|length == 3 and start_parts[0]|length == 4 else (ach.start_date or '') %}
+                                                {% set formatted_end = (end_parts[2] ~ '-' ~ end_parts[1] ~ '-' ~ end_parts[0]) if end_parts|length == 3 and end_parts[0]|length == 4 else (ach.end_date or '') %}
+                                                <span class="ach-dates-chip" title="Expedition Dates">
+                                                    <i class="fa-regular fa-calendar-days"></i> {{ formatted_start }} to {{ formatted_end }}
+                                                </span>
                                             </div>
                                         </div>
 
@@ -2045,6 +2050,19 @@
             }
         }
 
+        function formatDateDDMMYYYY(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.trim().split('-');
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    // YYYY-MM-DD -> DD-MM-YYYY
+                    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                return dateStr;
+            }
+            return dateStr;
+        }
+
         function getDurationLines(str) {
             if (!str || str === 'N/A') return { main: 'N/A', sub: null };
             if (str.includes('/')) {
@@ -2122,6 +2140,10 @@
                 const alt = getAltitudeLines(altitudeText);
                 const diff = getDifficultyLines(difficultyText);
 
+                const sDateFormatted = formatDateDDMMYYYY(ach.start_date);
+                const eDateFormatted = formatDateDDMMYYYY(ach.end_date);
+                const datesDisplay = (sDateFormatted && eDateFormatted) ? `${sDateFormatted} to ${eDateFormatted}` : (sDateFormatted || eDateFormatted || '');
+
                 return `
                     <div class="ach-horizontal-row-item" id="ach-card-${ach.id}">
                         <!-- Top Header Line: Left Info + Right Actions -->
@@ -2129,13 +2151,11 @@
                             <div class="ach-header-left">
                                 <div class="ach-row-icon"><i class="fa-solid fa-mountain"></i></div>
                                 <div class="ach-title-wrap">
-                                    <div class="ach-name-row">
-                                        <h5 class="ach-row-name">${escapeHtml(ach.trek_name)}</h5>
-                                        <span class="ach-dates-chip" title="Expedition Dates">
-                                            <i class="fa-regular fa-calendar-days"></i> ${ach.start_date} to ${ach.end_date}
-                                        </span>
-                                    </div>
+                                    <h5 class="ach-row-name">${escapeHtml(ach.trek_name)}</h5>
                                     <span class="ach-row-loc"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(locationText)}</span>
+                                    <span class="ach-dates-chip" title="Expedition Dates">
+                                        <i class="fa-regular fa-calendar-days"></i> ${escapeHtml(datesDisplay)}
+                                    </span>
                                 </div>
                             </div>
 

@@ -3433,6 +3433,27 @@ body {
 }
 
 /* Achievements Tab Styles */
+.achievements-summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.achievements-summary-card .pane-header {
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    padding-right: 140px;
+}
+
+.achievements-summary-card .achievement-stats-row {
+    margin-bottom: 0;
+}
+
 .achievement-stats-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -5653,15 +5674,52 @@ body {
     }
 
     .dashboard-content-panel {
-        padding: 14px 12px !important;
-        border-radius: 16px !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
         box-sizing: border-box !important;
         min-height: auto !important;
         position: relative !important;
-        overflow: hidden !important;
+        overflow: visible !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .dash-tab-pane#tab-personal,
+    .dash-tab-pane#tab-settings {
+        background: rgba(22, 20, 36, 0.95) !important;
+        border: 1px solid rgba(124, 92, 252, 0.22) !important;
+        border-radius: 18px !important;
+        padding: 16px 14px !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+    }
+
+    .achievements-summary-card {
+        padding: 16px 14px !important;
+        border-radius: 18px !important;
+        background: rgba(22, 20, 36, 0.95) !important;
+        border: 1px solid rgba(124, 92, 252, 0.22) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+        margin-bottom: 16px !important;
+        position: relative !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .achievements-summary-card .pane-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 14px !important;
+        padding-right: 105px !important;
+    }
+
+    .achievements-summary-card .achievement-stats-row {
+        margin-bottom: 0 !important;
     }
 
     .dash-corner-back-btn {
@@ -5937,15 +5995,10 @@ body {
     .ach-title-wrap {
         flex: 1 !important;
         min-width: 0 !important;
-        gap: 4px !important;
-    }
-
-    .ach-name-row {
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 4px !important;
-        width: 100% !important;
+        gap: 3px !important;
     }
 
     .ach-row-name {
@@ -5954,6 +6007,21 @@ body {
         color: #ffffff !important;
         line-height: 1.25 !important;
         word-break: break-word !important;
+        margin: 0 !important;
+    }
+
+    .ach-row-loc {
+        font-size: 0.72rem !important;
+        color: #94a3b8 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        margin: 0 !important;
+    }
+
+    .ach-row-loc i {
+        color: #f87171 !important;
+        font-size: 0.70rem !important;
     }
 
     .ach-dates-chip {
@@ -5961,18 +6029,12 @@ body {
         padding: 2px 8px !important;
         border-radius: 6px !important;
         background: rgba(124, 92, 252, 0.15) !important;
+        border: 1px solid rgba(124, 92, 252, 0.25) !important;
         color: #c4b5fd !important;
         display: inline-flex !important;
         align-items: center !important;
         gap: 5px !important;
-    }
-
-    .ach-row-loc {
-        font-size: 0.70rem !important;
-        color: #94a3b8 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
+        margin-top: 2px !important;
     }
 
     .ach-row-actions {
