@@ -5718,22 +5718,22 @@ body {
         gap: 8px !important;
     }
 
-    /* Achievements Tab Mobile Optimization (2+1 Balanced Grid - Zero Side Cutoff) */
+    /* Achievements Tab Mobile Optimization (Full-Width Symmetrical Cards) */
     .achievement-stats-row {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
         width: 100% !important;
         box-sizing: border-box !important;
         margin-bottom: 16px !important;
     }
 
     .ach-stat-card {
-        padding: 10px 8px !important;
+        padding: 12px 14px !important;
         flex-direction: row !important;
         align-items: center !important;
-        gap: 8px !important;
-        border-radius: 12px !important;
+        gap: 12px !important;
+        border-radius: 14px !important;
         background: rgba(22, 20, 36, 0.95) !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
@@ -5742,16 +5742,11 @@ body {
         box-sizing: border-box !important;
     }
 
-    /* Stat Card 2 (Highest Trek Name) spans full width on Row 2 so any long trek name fits without clipping */
-    .achievement-stats-row .ach-stat-card:nth-child(2) {
-        grid-column: 1 / -1 !important;
-    }
-
     .ach-stat-icon {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 0.85rem !important;
-        border-radius: 8px !important;
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 0.95rem !important;
+        border-radius: 10px !important;
         flex-shrink: 0 !important;
     }
 
@@ -5765,23 +5760,25 @@ body {
     }
 
     .ach-stat-label {
-        font-size: 0.58rem !important;
+        font-size: 0.62rem !important;
         color: #94a3b8 !important;
         font-weight: 700 !important;
-        letter-spacing: 0.3px !important;
+        letter-spacing: 0.4px !important;
         text-transform: uppercase !important;
         white-space: nowrap !important;
+        line-height: 1 !important;
+        margin-bottom: 3px !important;
     }
 
     .ach-stat-val {
-        font-size: 0.78rem !important;
+        font-size: 0.88rem !important;
         font-weight: 800 !important;
         color: #ffffff !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         line-height: 1.2 !important;
-        margin-top: 1px !important;
+        margin: 0 !important;
     }
 
     /* Add Trek Achievement Card Mobile */
