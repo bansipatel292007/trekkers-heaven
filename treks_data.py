@@ -22,7 +22,7 @@ TREKS_DATA = [
         "rating": 4.9,
         "reviews_count": 520,
         "price": "₹9,200",
-        "image": "/static/img/winter_summit_trek.jpg",
+        "image": "/static/img/kedarkantha_enhanced.jpg",
         "badge": "Top Winter Trek",
         "highlights": ["360° Himalayan Panorama", "Juda Ka Talab Lake", "Snow Peak Summit", "Dense Pine Forests"],
         "description": "Kedarkantha is India's most celebrated winter snow trek. Climbing to its peak at 12,500 ft treats you to a jaw-dropping 360-degree panorama of famous peaks including Swargarohini, Black Peak, and Bandarpoonch.",

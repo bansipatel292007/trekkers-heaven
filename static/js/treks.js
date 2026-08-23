@@ -287,7 +287,7 @@ function applyFilters() {
     // Update Counter
     const resultsCountEl = document.getElementById('resultsCount');
     if (resultsCountEl) {
-        resultsCountEl.innerHTML = `Showing <strong>${visibleCount}</strong> of ${cards.length} Famous Treks`;
+        resultsCountEl.innerHTML = `<i class="fa-solid fa-compass"></i> <strong>${visibleCount}</strong> Iconic Treks`;
     }
 
     // Empty State Toggle
@@ -435,12 +435,12 @@ function openTrekModal(trekId) {
 
     const isSaved = savedTreks.includes(trek.id);
 
-    // Format Duration into 2 stacked lines (e.g. "6 Days /" on top, "5 Nights" below) with same font
+    // Clean duration parsing (No trailing slashes!)
     const durationParts = (trek.duration_text || '').split(' / ');
-    const durationDays = durationParts[0] ? `${durationParts[0]} /` : `${trek.duration_days} Days /`;
+    const durationDays = durationParts[0] || `${trek.duration_days} Days`;
     const durationNights = durationParts[1] || '';
 
-    // Format Max Altitude into 2 stacked lines (Feet on top, Meters below)
+    // Clean Altitude parsing
     let altitudeFt = `${(trek.max_altitude_ft || 0).toLocaleString()} ft`;
     let altitudeM = '';
     if (trek.max_altitude_text && trek.max_altitude_text.includes('(')) {
@@ -452,13 +452,15 @@ function openTrekModal(trekId) {
     }
 
     content.innerHTML = `
+        <div class="modal-mobile-drag-bar"></div>
         <div class="modal-trek-hero">
             <img src="${trek.image}" alt="${trek.name}" class="modal-hero-img">
+            <div class="modal-hero-gradient-overlay"></div>
             
             <div class="modal-hero-top-bar">
                 <div class="modal-hero-badges-group">
                     <span class="modal-badge-featured"><i class="fa-solid fa-award"></i> ${trek.badge}</span>
-                    <span class="modal-badge-rating"><i class="fa-solid fa-star"></i> ${trek.rating} <span class="rating-sub">(${trek.reviews_count} reviews)</span></span>
+                    <span class="modal-badge-rating"><i class="fa-solid fa-star"></i> ${trek.rating} <span class="rating-sub">(${trek.reviews_count || 120} reviews)</span></span>
                 </div>
                 <button type="button" class="modal-close-round" onclick="closeTrekModal()" title="Close details">
                     <i class="fa-solid fa-xmark"></i>
@@ -471,7 +473,8 @@ function openTrekModal(trekId) {
             <div class="modal-title-header-block">
                 <div class="modal-location-tags">
                     <span class="modal-tag-pill"><i class="fa-solid fa-location-dot"></i> ${trek.region}, ${trek.country}</span>
-                    <span class="modal-tag-pill"><i class="fa-regular fa-calendar-check"></i> ${trek.best_season}</span>
+                    <span class="modal-tag-pill season-pill-tag"><i class="fa-regular fa-calendar-check"></i> ${trek.best_season}</span>
+                    <span class="modal-tag-pill diff-pill-tag diff-${trek.difficulty_slug}"><i class="fa-solid fa-gauge-high"></i> ${trek.difficulty}</span>
                 </div>
                 <div class="modal-title-row">
                     <div class="modal-title-left">
@@ -491,14 +494,15 @@ function openTrekModal(trekId) {
                     <div class="m-data">
                         <span class="m-label">Duration</span>
                         <strong class="m-val">${durationDays}</strong>
-                        ${durationNights ? `<strong class="m-val">${durationNights}</strong>` : ''}
+                        ${durationNights ? `<span class="m-sub-val">${durationNights}</span>` : ''}
                     </div>
                 </div>
                 <div class="modal-metric-card">
                     <div class="m-icon-wrap m-icon-distance"><i class="fa-solid fa-route"></i></div>
                     <div class="m-data">
-                        <span class="m-label">Trail Distance</span>
-                        <strong class="m-val">${trek.distance_text}</strong>
+                        <span class="m-label">Distance</span>
+                        <strong class="m-val">${trek.distance_text || trek.distance_km + ' km'}</strong>
+                        <span class="m-sub-val">Total Trail</span>
                     </div>
                 </div>
                 <div class="modal-metric-card">
@@ -506,14 +510,15 @@ function openTrekModal(trekId) {
                     <div class="m-data">
                         <span class="m-label">Max Altitude</span>
                         <strong class="m-val">${altitudeFt}</strong>
-                        ${altitudeM ? `<span class="m-sub-val">${altitudeM}</span>` : ''}
+                        ${altitudeM ? `<span class="m-sub-val">${altitudeM}</span>` : '<span class="m-sub-val">Summit Height</span>'}
                     </div>
                 </div>
                 <div class="modal-metric-card">
                     <div class="m-icon-wrap m-icon-diff"><i class="fa-solid fa-gauge-high"></i></div>
                     <div class="m-data">
                         <span class="m-label">Difficulty</span>
-                        <strong class="m-val">${trek.difficulty}</strong>
+                        <strong class="m-val diff-color-${trek.difficulty_slug}">${trek.difficulty}</strong>
+                        <span class="m-sub-val">Grading</span>
                     </div>
                 </div>
             </div>
@@ -556,7 +561,7 @@ function openTrekModal(trekId) {
                 <div class="logistics-item">
                     <span class="logistics-icon"><i class="fa-solid fa-flag-checkered"></i></span>
                     <div class="logistics-text">
-                        <span class="logistics-label">Start Point</span>
+                        <span class="logistics-label">Basecamp / Start</span>
                         <strong class="logistics-val">${trek.start_point}</strong>
                     </div>
                 </div>
@@ -611,21 +616,21 @@ function openTrekModal(trekId) {
                 </div>
             </div>
             ` : ''}
+        </div>
 
-            <!-- Modal Footer Action Bar -->
-            <div class="modal-footer-bar">
-                <div class="modal-price-box">
-                    <span class="price-prefix">All-Inclusive Pass</span>
-                    <div class="price-main">
-                        <strong class="modal-price-number">${trek.price}</strong>
-                        <span class="price-tax">/ trekker</span>
-                    </div>
+        <!-- Modal Sticky Action Footer -->
+        <div class="modal-footer-bar">
+            <div class="modal-price-box">
+                <span class="price-prefix">All-Inclusive Pass</span>
+                <div class="price-main">
+                    <strong class="modal-price-number">${trek.price}</strong>
+                    <span class="price-tax">/ trekker</span>
                 </div>
-                <div class="modal-action-btns">
-                    <button type="button" class="btn-modal-back-treks" onclick="closeTrekModal()">
-                        <i class="fa-solid fa-arrow-left"></i> Back to Treks
-                    </button>
-                </div>
+            </div>
+            <div class="modal-action-btns">
+                <button type="button" class="btn-modal-back-treks" onclick="closeTrekModal()">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Treks
+                </button>
             </div>
         </div>
     `;

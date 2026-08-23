@@ -245,14 +245,14 @@
                 <!-- Results Bar & Sorter -->
                 <div class="results-header-bar">
                     <div class="results-count-wrap">
-                        <span class="results-count" id="resultsCount">Showing <strong>{{ treks|length }}</strong> Iconic Treks</span>
+                        <span class="results-count" id="resultsCount"><i class="fa-solid fa-compass"></i> <strong>{{ treks|length }}</strong> Iconic Treks</span>
                         <div class="active-tag-list" id="activeFilterTags"></div>
                     </div>
                     
                     <div class="sort-wrapper">
-                        <label for="sortSelector" class="sort-label">Sort by:</label>
-                        <select id="sortSelector" class="sort-select" onchange="applyFilters()">
-                            <option value="featured">All Treks</option>
+                        <i class="fa-solid fa-arrow-down-wide-short sort-icon"></i>
+                        <select id="sortSelector" class="sort-select" onchange="applyFilters()" aria-label="Sort treks">
+                            <option value="featured">Featured</option>
                             <option value="altitude-desc">Altitude: High to Low</option>
                             <option value="altitude-asc">Altitude: Low to High</option>
                             <option value="duration-asc">Duration: Short to Long</option>
