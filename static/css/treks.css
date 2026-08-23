@@ -3340,47 +3340,70 @@ body {
     position: relative;
 }
 
-/* Corner Inside-Border Back Button */
-.dash-corner-back-btn {
-    position: absolute;
-    top: 22px;
-    right: 22px;
-    z-index: 10;
+/* Dashboard Top Navbar */
+.dash-top-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(12, 10, 20, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.dash-top-nav-container {
+    max-width: 1300px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dash-top-back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 7px 16px;
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-full);
-    color: #cbd5e1;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-    text-decoration: none;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dash-corner-back-btn i {
-    color: var(--purple-primary);
-    font-size: 0.78rem;
-    transition: transform 0.25s ease, color 0.25s ease;
-}
-
-.dash-corner-back-btn:hover {
+    gap: 7px;
+    padding: 6px 14px;
     background: rgba(124, 92, 252, 0.15);
+    border: 1px solid rgba(124, 92, 252, 0.35);
+    border-radius: var(--radius-full);
     color: #ffffff;
-    border-color: rgba(124, 92, 252, 0.5);
-    box-shadow: 0 6px 20px rgba(124, 92, 252, 0.25);
-    transform: translateY(-1px);
+    font-size: 0.80rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 3px 12px rgba(124, 92, 252, 0.25);
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-.dash-corner-back-btn:hover i {
+.dash-top-back-btn i {
     color: #c4b5fd;
+    font-size: 0.78rem;
+    transition: transform 0.2s ease;
+}
+
+.dash-top-back-btn:hover {
+    background: linear-gradient(135deg, #7c5cfc 0%, #6366f1 100%);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 5px 16px rgba(124, 92, 252, 0.45);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+.dash-top-back-btn:hover i {
     transform: translateX(-3px);
+    color: #ffffff;
+}
+
+/* Corner Inside-Border Back Button */
+.dash-corner-back-btn {
+    display: none;
 }
 
 .dash-tab-pane {
@@ -3403,7 +3426,7 @@ body {
     margin-top: 0;
     padding-bottom: 14px;
     margin-bottom: 20px;
-    padding-right: 140px;
+    padding-right: 0;
 }
 
 .pane-title {
@@ -5952,11 +5975,55 @@ body {
         box-sizing: border-box !important;
     }
 
+    /* Dashboard Mobile Top Navbar */
+    .dash-top-navbar {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+        background: rgba(12, 10, 20, 0.96) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        height: 50px !important;
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    .dash-top-nav-container {
+        padding: 0 14px !important;
+        height: 50px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .dash-top-back-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        padding: 5px 12px !important;
+        background: rgba(124, 92, 252, 0.15) !important;
+        border: 1px solid rgba(124, 92, 252, 0.35) !important;
+        border-radius: 20px !important;
+        color: #ffffff !important;
+        font-size: 0.74rem !important;
+        font-weight: 700 !important;
+        text-decoration: none !important;
+        box-shadow: 0 3px 10px rgba(124, 92, 252, 0.25) !important;
+        white-space: nowrap !important;
+    }
+
+    .dash-top-back-btn i {
+        color: #c4b5fd !important;
+        font-size: 0.72rem !important;
+    }
+
     .achievements-summary-card .pane-header {
         border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
         padding-bottom: 10px !important;
         margin-bottom: 14px !important;
-        padding-right: 105px !important;
+        padding-right: 0 !important;
     }
 
     .achievements-summary-card .achievement-stats-row {
@@ -5964,23 +6031,11 @@ body {
     }
 
     .dash-corner-back-btn {
-        position: absolute !important;
-        top: 14px !important;
-        right: 12px !important;
-        padding: 5px 10px !important;
-        font-size: 0.72rem !important;
-        height: 28px !important;
-        gap: 5px !important;
-        border-radius: 20px !important;
-        white-space: nowrap !important;
-    }
-
-    .dash-corner-back-btn span {
-        font-size: 0.72rem !important;
+        display: none !important;
     }
 
     .pane-header {
-        padding-right: 105px !important;
+        padding-right: 0 !important;
         padding-bottom: 10px !important;
         margin-bottom: 14px !important;
         width: 100% !important;

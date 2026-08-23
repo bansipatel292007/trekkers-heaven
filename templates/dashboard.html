@@ -54,6 +54,20 @@
         {% endwith %}
     </div>
 
+    <!-- Top Navigation Bar on Profile / Dashboard -->
+    <nav class="dash-top-navbar">
+        <div class="dash-top-nav-container">
+            <a href="{{ url_for('treks') }}" class="nav-brand">
+                <span class="logo-icon"><i class="fa-solid fa-mountain-sun"></i></span>
+                <span class="logo-text">TREKKERS<span>HEAVEN</span></span>
+            </a>
+            <a href="{{ url_for('treks') }}" class="dash-top-back-btn" title="Back to Treks Explorer">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Treks</span>
+            </a>
+        </div>
+    </nav>
+
     <!-- Main Dashboard Section -->
     <main class="explorer-container dashboard-main-wrap">
         <div class="dashboard-two-col-layout">
@@ -111,12 +125,6 @@
             <!-- RIGHT MAIN CONTENT CARD -->
             <section class="dashboard-content-panel">
                 
-                <!-- TOP RIGHT CORNER INSIDE BORDER: Back to Treks Button -->
-                <a href="{{ url_for('treks') }}" class="dash-corner-back-btn" title="Back to Treks">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    <span>Back to Treks</span>
-                </a>
-
                 <!-- TAB 1: Personal Details (Default Active) -->
                 <div class="dash-tab-pane active" id="tab-personal">
                     <div class="pane-header">
