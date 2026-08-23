@@ -1122,6 +1122,12 @@ async function sendChatbotMessage(event) {
     const text = input.value.trim();
     if (!text) return;
 
+    // Build history for multi-turn context (last 6 messages)
+    const historyPayload = chatbotMessages.slice(-6).map(m => ({
+        role: m.sender === 'user' ? 'user' : 'model',
+        text: m.text
+    }));
+
     // Append user message
     chatbotMessages.push({
         sender: 'user',
@@ -1150,10 +1156,13 @@ async function sendChatbotMessage(event) {
     }
 
     try {
-        const res = await fetch('/api/chatbot', {
+        const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({ 
+                message: text,
+                history: historyPayload
+            })
         });
         const data = await res.json();
 
@@ -1171,6 +1180,11 @@ async function sendChatbotMessage(event) {
         });
         saveChatbotHistory();
         renderChatbotMessages();
+
+        // Update suggestion chips dynamically if provided
+        if (data.suggestions && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+            updateChatbotSuggestions(data.suggestions);
+        }
     } catch (err) {
         const ind = document.getElementById('chatTypingIndicator');
         if (ind) ind.remove();
@@ -1183,6 +1197,16 @@ async function sendChatbotMessage(event) {
         saveChatbotHistory();
         renderChatbotMessages();
     }
+}
+
+function updateChatbotSuggestions(suggestions) {
+    const wrap = document.getElementById('chatbotSuggestionsWrap');
+    if (!wrap) return;
+    wrap.innerHTML = suggestions.map(s => `
+        <button type="button" class="chatbot-chip" onclick="handleChatbotChipClick('${s.replace(/'/g, "\\'")}', event)">
+            <i class="fa-solid fa-sparkles"></i> ${s}
+        </button>
+    `).join('');
 }
 
 function toggleChecklistPopover(event) {

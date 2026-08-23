@@ -1,10 +1,15 @@
 import os
 import re
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 import database
 import treks_data
+import gemini_service
+
+# Load environment variables (.env)
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
@@ -519,271 +524,35 @@ def find_matched_treks_for_query(msg_lower):
                 
     return matched
 
+@app.route('/api/chat', methods=['POST'])
 @app.route('/api/chatbot', methods=['POST'])
-def api_chatbot():
+def api_chat():
+    """
+    Secure Google Gemini AI endpoint (POST /api/chat or POST /api/chatbot).
+    Accepts user message and multi-turn conversation memory history.
+    """
     data = request.get_json() or {}
-    user_msg = (data.get('message') or '').strip()
-    msg_lower = user_msg.lower()
+    user_msg = (data.get('message') or data.get('prompt') or '').strip()
+    history = data.get('history') or []
     
     if not user_msg:
         return jsonify({
-            'reply': "Namaste! 👋 I am **Sherpa AI**, your personal mountain guide for Trekkers Heaven. Ask me about trek recommendations, comparisons, mountain passes, altitude sickness (AMS), packing essentials, or budgets!",
-            'suggestions': ["Compare Kedarkantha vs Brahmatal", "Best beginner treks?", "Packing essentials", "Prevent altitude sickness"]
+            'success': True,
+            'reply': "Namaste! 🏔️ I am **Sherpa AI**, powered by Google Gemini. Ask me anything about Himalayan trails, gear essentials, difficulty, safety, or budgets!",
+            'suggestions': ["Compare Kedarkantha vs Brahmatal", "Best beginner treks under ₹10k", "Top winter snow treks", "How to prevent AMS?"]
         })
 
-    matched_treks = find_matched_treks_for_query(msg_lower)
-    is_compare_intent = any(k in msg_lower for k in ['compare', 'vs', 'versus', 'difference', 'better', 'which one', 'antar', 'tulna', 'dono', 'kon sa'])
-
-    # 1. Comparison between 2 or more treks
-    if len(matched_treks) >= 2 or (is_compare_intent and len(matched_treks) >= 2):
-        t1 = matched_treks[0]
-        t2 = matched_treks[1]
-        
-        reply = (
-            f"⚖️ **Trek Comparison: {t1['name']} vs {t2['name']}**\n\n"
-            f"🏔️ **1. Altitude & Difficulty:**\n"
-            f"• **{t1['name']}:** {t1['max_altitude_text']} | {t1['difficulty']} ({t1['fitness_level']})\n"
-            f"• **{t2['name']}:** {t2['max_altitude_text']} | {t2['difficulty']} ({t2['fitness_level']})\n\n"
-            f"⏳ **2. Duration & Distance:**\n"
-            f"• **{t1['name']}:** {t1['duration_text']} ({t1['distance_text']})\n"
-            f"• **{t2['name']}:** {t2['duration_text']} ({t2['distance_text']})\n\n"
-            f"🗓️ **3. Best Season:**\n"
-            f"• **{t1['name']}:** {t1['best_season']}\n"
-            f"• **{t2['name']}:** {t2['best_season']}\n\n"
-            f"💰 **4. Pricing & Rating:**\n"
-            f"• **{t1['name']}:** {t1['price']} (⭐ {t1['rating']})\n"
-            f"• **{t2['name']}:** {t2['price']} (⭐ {t2['rating']})\n\n"
-            f"🌟 **5. Highlights Comparison:**\n"
-            f"• **{t1['name']}:** {', '.join(t1['highlights'][:3])}\n"
-            f"• **{t2['name']}:** {', '.join(t2['highlights'][:3])}\n\n"
-            f"🎯 **Sherpa Recommendation:**\n"
-            f"• Choose **{t1['name']}** if you want: *{t1['tagline']}*.\n"
-            f"• Choose **{t2['name']}** if you want: *{t2['tagline']}*."
-        )
+    try:
+        response_data = gemini_service.generate_chat_response(user_msg, history=history)
+        return jsonify(response_data)
+    except Exception as e:
+        print(f"Error handling Gemini chat request: {e}")
         return jsonify({
-            'reply': reply,
-            'compare_treks': [
-                {'id': t1['id'], 'name': t1['name']},
-                {'id': t2['id'], 'name': t2['name']}
-            ],
-            'suggestions': [
-                f"Show itinerary for {t1['name']}",
-                f"Show itinerary for {t2['name']}",
-                "Compare other treks"
-            ]
-        })
-
-    # 2. Comparison asked generally or with only 1 trek
-    if is_compare_intent:
-        if len(matched_treks) == 1:
-            t = matched_treks[0]
-            other = next((item for item in treks_data.TREKS_DATA if item['id'] != t['id'] and (item['region'] == t['region'] or item['difficulty_slug'] == t['difficulty_slug'])), treks_data.TREKS_DATA[0])
-            return jsonify({
-                'reply': (
-                    f"I can compare **{t['name']}** with any other trek! For example, would you like to compare **{t['name']} vs {other['name']}**?\n\n"
-                    f"Type something like: *'Compare {t['name']} vs Brahmatal'* or *'Compare {t['name']} vs Kuari Pass'*."
-                ),
-                'suggestions': [
-                    f"Compare {t['name']} vs {other['name']}",
-                    f"Compare {t['name']} vs Brahmatal",
-                    f"Compare {t['name']} vs Kuari Pass"
-                ]
-            })
-        else:
-            return jsonify({
-                'reply': (
-                    "⚖️ **Trek Comparison Feature:**\n\n"
-                    "I can compare any 2 Himalayan or global treks side-by-side on **altitude, difficulty, duration, cost, best season, and scenic highlights**!\n\n"
-                    "**Popular Comparisons to Try:**\n"
-                    "• *Kedarkantha vs Brahmatal* (Winter Summits)\n"
-                    "• *Hampta Pass vs Kashmir Great Lakes* (Green Valleys vs Alpine Lakes)\n"
-                    "• *Rupin Pass vs Bali Pass* (Epic High Crossovers)\n"
-                    "• *Everest Base Camp vs Annapurna Circuit* (Nepal Giants)"
-                ),
-                'suggestions': [
-                    "Compare Kedarkantha vs Brahmatal",
-                    "Compare Hampta Pass vs Kashmir Great Lakes",
-                    "Compare Rupin Pass vs Bali Pass",
-                    "Compare EBC vs Annapurna Circuit"
-                ]
-            })
-
-    # 3. Single Specific Trek Details
-    if len(matched_treks) == 1:
-        t = matched_treks[0]
-        t_clean_name = t['name'].replace(' Trek', '').replace(' Pass', '').strip()
-        highlights_list = " • " + "\n • ".join(t.get('highlights', []))
-        reply = (
-            f"🏔️ **{t['name']}** ({t.get('region')}, {t.get('country')})\n\n"
-            f"✨ *{t.get('tagline')}*\n\n"
-            f"• **Max Altitude:** {t.get('max_altitude_text')}\n"
-            f"• **Duration:** {t.get('duration_text')} ({t.get('distance_text')})\n"
-            f"• **Difficulty:** {t.get('difficulty')} ({t.get('fitness_level')})\n"
-            f"• **Best Season:** {t.get('best_season')}\n"
-            f"• **Price:** {t.get('price')} (Rating: ⭐ {t.get('rating')})\n\n"
-            f"📌 **Key Highlights:**\n{highlights_list}\n\n"
-            f"💡 *{t.get('description')}*"
-        )
-        return jsonify({
-            'reply': reply,
-            'trek_id': t['id'],
-            'trek_name': t['name'],
-            'suggestions': [f"Show itinerary for {t_clean_name}", f"Compare {t['name']} with another trek", "Packing list for this trek"]
-        })
-            
-    # 2. Greetings
-    if any(w in msg_lower for w in ['hello', 'hi', 'hey', 'namaste', 'kem cho', 'salaam', 'yo', 'sup']):
-        return jsonify({
-            'reply': "Namaste! 🏔️ Welcome to **Trekkers Heaven**. I'm **Sherpa AI**, your personal AI trek guide. I can help you choose the best trail, prepare your gear, plan your budget, or give safety tips. What would you like to explore today?",
-            'suggestions': ["Best beginner treks?", "Treks under ₹10,000", "Top winter snow treks", "How to prevent AMS?"]
-        })
-
-    # 3. Altitude Sickness / AMS / Acclimatization
-    if any(w in msg_lower for w in ['ams', 'altitude', 'sickness', 'headache', 'diamox', 'acclimatization', 'oxygen', 'high altitude']):
-        reply = (
-            "⚠️ **Acute Mountain Sickness (AMS) Prevention Guide:**\n\n"
-            "1. 💧 **Hydration is Key:** Drink 4 to 5 liters of water daily. Add ORS or electrolytes.\n"
-            "2. 🧗 **Ascend Gradually:** Do not increase your sleeping altitude by more than 1,000–1,500 ft per day above 9,000 ft.\n"
-            "3. 🏔️ **Climb High, Sleep Low:** Go for an evening acclimatization walk to higher ground, then sleep lower.\n"
-            "4. 🚫 **Avoid Alcohol & Smoking:** Both increase dehydration and reduce oxygen uptake.\n"
-            "5. 💊 **Diamox (Acetazolamide):** Consult a doctor before taking 125mg–250mg twice daily as a preventive measure.\n"
-            "6. 🛑 **Golden Rule:** If you experience severe headache, nausea, dizziness, or loss of appetite, inform your trek leader and **never ascend with symptoms**."
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["Essential gear list", "Easy beginner treks", "High mountain pass treks"]
-        })
-
-    # 4. Packing / Gear / Essentials
-    if any(w in msg_lower for w in ['pack', 'gear', 'shoe', 'jacket', 'backpack', 'checklist', 'clothes', 'rucksack', 'layer', 'saman']):
-        reply = (
-            "🎒 **Trek Packing Essentials:**\n\n"
-            "• **Footwear:** Waterproof high-ankle trekking shoes with deep vibram lugs + 4-5 pairs of synthetic/wool socks.\n"
-            "• **3-Layer Clothing Rule:**\n"
-            "   1. *Base Layer:* Moisture-wicking thermal top & bottom (avoid cotton!).\n"
-            "   2. *Mid Layer:* Warm fleece or synthetic sweater.\n"
-            "   3. *Outer Layer:* Windproof/waterproof down jacket (-10°C rated) + rain poncho.\n"
-            "• **Gear:** 50–60L rucksack with rain cover, UV sunglasses (Cat 3/4), headlamp with extra batteries, trekking poles.\n"
-            "• **Medical & Toiletries:** Sunscreen (SPF 50+), lip balm with SPF, personal medical kit (Diamox, Paracetamol, Band-aids, ORS).\n\n"
-            "💡 *Tip: Check out the **Trek Essentials Checklist** button next to me in the navbar to track your items!*"
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["Best winter snow treks", "Treks under ₹10,000", "Physical fitness routine"]
-        })
-
-    # 5. Beginner / Easy Treks
-    if any(w in msg_lower for w in ['beginner', 'easy', 'first time', 'starter', 'novice', 'newbie', 'pehla', 'simple']):
-        easy_treks = [t for t in treks_data.TREKS_DATA if t.get('difficulty_slug') == 'easy']
-        lines = []
-        for t in easy_treks[:5]:
-            lines.append(f"• **{t['name']}** ({t['region']}) - {t['max_altitude_text']} | {t['duration_text']} | {t['price']}")
-        
-        reply = (
-            "🌟 **Top Recommended Beginner Treks:**\n\n"
-            + "\n".join(lines) +
-            "\n\n💡 *These treks feature gradual ascents, well-defined forest trails, and comfortable campsites with breathtaking Himalayan views!*"
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["Tell me about Kedarkantha", "Tell me about Brahmatal", "Packing list for beginners"]
-        })
-
-    # 6. Budget / Price queries
-    if any(w in msg_lower for w in ['budget', 'cheap', 'price', 'cost', 'under 10000', 'under 10k', '10,000', 'inexpensive', 'affordable', 'low cost']):
-        budget_treks = [t for t in treks_data.TREKS_DATA if int(re.sub(r'[^\d]', '', t.get('price', '0')) or 0) <= 12000]
-        lines = []
-        for t in budget_treks[:5]:
-            lines.append(f"• **{t['name']}** - **{t['price']}** ({t['duration_text']} in {t['region']})")
-            
-        reply = (
-            "💰 **Best Budget Himalayan Treks Under ₹12,000:**\n\n"
-            + "\n".join(lines) +
-            "\n\n💡 *All include guide fees, forest permits, camping tents, and high-altitude meals!*"
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["Tell me about Bhrigu Lake", "Tell me about Kedarkantha", "Tell me about Har Ki Dun"]
-        })
-
-    # 7. Winter / Snow Treks
-    if any(w in msg_lower for w in ['winter', 'snow', 'barf', 'december', 'january', 'february', 'thand', 'frozen', 'ice']):
-        winter_treks = [t for t in treks_data.TREKS_DATA if any(m in ['December', 'January', 'February'] for m in t.get('best_months', []))]
-        lines = []
-        for t in winter_treks[:5]:
-            lines.append(f"• **{t['name']}** ({t['region']}) - {t['max_altitude_text']} | {t['price']}")
-            
-        reply = (
-            "❄️ **Spectacular Winter Snow Treks:**\n\n"
-            + "\n".join(lines) +
-            "\n\n💡 *Expect deep snow, frozen alpine lakes (like Juda Ka Talab & Brahmatal), and crystalline summit views!*"
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["Tell me about Chadar Trek", "Tell me about Kedarkantha", "Winter packing essentials"]
-        })
-
-    # 8. Difficult / High Pass / Expert Treks
-    if any(w in msg_lower for w in ['difficult', 'hard', 'extreme', 'expert', 'challenging', 'crossover', 'pass', 'high altitude', 'tough']):
-        diff_treks = [t for t in treks_data.TREKS_DATA if t.get('difficulty_slug') in ['difficult', 'expert']]
-        lines = []
-        for t in diff_treks[:5]:
-            lines.append(f"• **{t['name']}** ({t['region']}) - {t['max_altitude_text']} | {t['price']}")
-            
-        reply = (
-            "⚡ **Top Challenging & High-Pass Crossover Expeditions:**\n\n"
-            + "\n".join(lines) +
-            "\n\n🧗 *Requires strong physical stamina, cold tolerance, and mountain endurance!*"
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["Tell me about Pin Parvati Pass", "Tell me about Rupin Pass", "Tell me about Goechala"]
-        })
-
-    # 9. Fitness / Training
-    if any(w in msg_lower for w in ['fitness', 'workout', 'train', 'exercise', 'gym', 'preparation', 'running', 'stamina']):
-        reply = (
-            "🏃 **Himalayan Trek Fitness Plan (Start 4-6 weeks before trek):**\n\n"
-            "1. 🫁 **Cardio Endurance:** Jog 5 km in under 30 minutes, 4 days a week (builds aerobic capacity).\n"
-            "2. 🪜 **Stair Climbing:** Climb 30-40 flights of stairs wearing a 5-8 kg backpack twice a week.\n"
-            "3. 🦵 **Leg Strength:** 3 sets of 20 squats, lunges, and calf raises.\n"
-            "4. 🧘 **Core & Flexibility:** 60-second planks, hamstring and calf stretches to prevent cramps and knee stress.\n"
-            "5. 👟 **Shoe Break-in:** Wear your trekking shoes on 3-4 long walks before the trek to avoid blisters."
-        )
-        return jsonify({
-            'reply': reply,
-            'suggestions': ["AMS prevention guide", "Packing essentials", "Beginner treks"]
-        })
-
-    # 10. General / Region Search
-    for reg in ['uttarakhand', 'himachal', 'kashmir', 'ladakh', 'sikkim', 'nepal', 'peru', 'tanzania']:
-        if reg in msg_lower:
-            reg_treks = [t for t in treks_data.TREKS_DATA if reg in t.get('region', '').lower() or reg in t.get('country', '').lower()]
-            if reg_treks:
-                lines = [f"• **{t['name']}** - {t['max_altitude_text']} | {t['price']} ({t['difficulty']})" for t in reg_treks]
-                reply = (
-                    f"🗺️ **Treks in {reg.capitalize()}:**\n\n"
-                    + "\n".join(lines) +
-                    f"\n\nWhich of these would you like to know more about?"
-                )
-                return jsonify({
-                    'reply': reply,
-                    'suggestions': [f"Tell me about {reg_treks[0]['name']}", "Best season for this region", "Packing checklist"]
-                })
-
-    # 11. Default fallback helpful AI answer
-    return jsonify({
-        'reply': (
-            f"I'm here to help you plan your next mountain adventure on **Trekkers Heaven**!\n\n"
-            f"You can ask me questions like:\n"
-            f"• *'Tell me about Kedarkantha or Rupin Pass'*\n"
-            f"• *'What are the best winter snow treks?'*\n"
-            f"• *'How to prevent AMS (altitude sickness)?'*\n"
-            f"• *'Which treks are under ₹10,000?'*\n"
-            f"• *'What gear should I pack?'*"
-        ),
-        'suggestions': ["Best beginner treks", "Snow treks", "AMS Prevention", "Packing Checklist"]
-    })
+            'success': False,
+            'error': str(e),
+            'reply': "I encountered an issue connecting to the mountain basecamp. Please try again in a moment.",
+            'suggestions': ["Best beginner treks", "Top winter snow treks", "How to prevent AMS?"]
+        }), 500
 
 if __name__ == '__main__':
     print("Starting Auth & Treks Server on http://0.0.0.0:5000 (Local: http://127.0.0.1:5000) ...")
