@@ -594,7 +594,6 @@
                                                     <span class="ach-m-sub-val">{{ dur_parts[1].strip() }}</span>
                                                 {% else %}
                                                     <strong class="ach-m-val">{{ ach.duration_text or 'N/A' }}</strong>
-                                                    <span class="ach-m-sub-val">Expedition</span>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -604,7 +603,6 @@
                                             <div class="ach-m-info">
                                                 <span class="ach-m-label">Distance</span>
                                                 <strong class="ach-m-val">{{ ach.distance_text or ach.distance or 'N/A' }}</strong>
-                                                <span class="ach-m-sub-val">Total Trail</span>
                                             </div>
                                         </div>
 
@@ -622,7 +620,6 @@
                                                     <span class="ach-m-sub-val">{{ alt_parts[1].strip() }}</span>
                                                 {% else %}
                                                     <strong class="ach-m-val">{{ ach.altitude or 'N/A' }}</strong>
-                                                    <span class="ach-m-sub-val">Peak Altitude</span>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -644,7 +641,6 @@
                                                     <span class="ach-m-sub-val">{{ d_parts[1].strip() }}</span>
                                                 {% else %}
                                                     <strong class="ach-m-val">{{ diff_text }}</strong>
-                                                    <span class="ach-m-sub-val">Grade Trail</span>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -2050,25 +2046,21 @@
         }
 
         function getDurationLines(str) {
-            if (!str || str === 'N/A') return { main: 'N/A', sub: 'Expedition' };
+            if (!str || str === 'N/A') return { main: 'N/A', sub: null };
             if (str.includes('/')) {
                 const parts = str.split('/');
                 return { main: parts[0].trim(), sub: parts[1].trim() };
             }
-            return { main: str, sub: 'Expedition' };
+            return { main: str, sub: null };
         }
 
         function getDistanceLines(str) {
-            if (!str || str === 'N/A') return { main: 'N/A', sub: 'Total Trail' };
-            if (str.includes('(')) {
-                const parts = str.split('(');
-                return { main: parts[0].trim(), sub: `(${parts[1].trim()}` };
-            }
-            return { main: str, sub: 'Total Trail' };
+            if (!str || str === 'N/A') return { main: 'N/A', sub: null };
+            return { main: str, sub: null };
         }
 
         function getAltitudeLines(str) {
-            if (!str || str === 'N/A') return { main: 'N/A', sub: 'Peak Altitude' };
+            if (!str || str === 'N/A') return { main: 'N/A', sub: null };
             if (str.includes('(')) {
                 const parts = str.split('(');
                 return { main: parts[0].trim(), sub: `(${parts[1].trim()}` };
@@ -2076,11 +2068,11 @@
                 const parts = str.split('/');
                 return { main: parts[0].trim(), sub: parts[1].trim() };
             }
-            return { main: str, sub: 'Peak Altitude' };
+            return { main: str, sub: null };
         }
 
         function getDifficultyLines(str) {
-            if (!str || str === 'N/A') return { main: 'Moderate', sub: 'Grade Trail' };
+            if (!str || str === 'N/A') return { main: 'Moderate', sub: null };
             const lower = str.toLowerCase();
             if (lower.includes('easy') && lower.includes('mod')) {
                 return { main: 'Easy to', sub: 'Moderate' };
@@ -2093,7 +2085,7 @@
                 const parts = str.split(/to/i);
                 return { main: `${parts[0].trim()} to`, sub: parts[1].trim() };
             }
-            return { main: str, sub: 'Grade Trail' };
+            return { main: str, sub: null };
         }
 
         function renderAchievementsShowcase(list) {
@@ -2177,7 +2169,7 @@
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Duration</span>
                                     <strong class="ach-m-val">${escapeHtml(dur.main)}</strong>
-                                    <span class="ach-m-sub-val">${escapeHtml(dur.sub)}</span>
+                                    ${dur.sub ? `<span class="ach-m-sub-val">${escapeHtml(dur.sub)}</span>` : ''}
                                 </div>
                             </div>
 
@@ -2186,7 +2178,7 @@
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Distance</span>
                                     <strong class="ach-m-val">${escapeHtml(dist.main)}</strong>
-                                    <span class="ach-m-sub-val">${escapeHtml(dist.sub)}</span>
+                                    ${dist.sub ? `<span class="ach-m-sub-val">${escapeHtml(dist.sub)}</span>` : ''}
                                 </div>
                             </div>
 
@@ -2195,7 +2187,7 @@
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Altitude</span>
                                     <strong class="ach-m-val">${escapeHtml(alt.main)}</strong>
-                                    <span class="ach-m-sub-val">${escapeHtml(alt.sub)}</span>
+                                    ${alt.sub ? `<span class="ach-m-sub-val">${escapeHtml(alt.sub)}</span>` : ''}
                                 </div>
                             </div>
 
@@ -2204,7 +2196,7 @@
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Difficulty</span>
                                     <strong class="ach-m-val">${escapeHtml(diff.main)}</strong>
-                                    <span class="ach-m-sub-val">${escapeHtml(diff.sub)}</span>
+                                    ${diff.sub ? `<span class="ach-m-sub-val">${escapeHtml(diff.sub)}</span>` : ''}
                                 </div>
                             </div>
                         </div>

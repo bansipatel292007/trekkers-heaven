@@ -4055,40 +4055,31 @@ body {
     overflow: hidden;
     flex: 1;
     justify-content: center;
+    min-height: 32px;
 }
 
 .ach-m-label {
-    font-size: 0.60rem;
+    font-size: 0.58rem;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
     line-height: 1;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
     white-space: nowrap;
 }
 
-.ach-m-val {
-    font-size: 0.82rem;
-    font-weight: 800;
-    color: #ffffff;
-    line-height: 1.15;
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
+.ach-m-val,
 .ach-m-sub-val {
-    font-size: 0.70rem;
-    font-weight: 600;
-    color: #cbd5e1;
-    line-height: 1.15;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
     display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 1px;
+    margin: 0;
 }
 
 @media (max-width: 900px) {
@@ -6073,28 +6064,17 @@ body {
         white-space: nowrap !important;
     }
 
-    .ach-m-val {
-        font-size: 0.78rem !important;
-        font-weight: 800 !important;
-        color: #ffffff !important;
-        line-height: 1.15 !important;
-        display: block !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        margin-top: 0 !important;
-    }
-
+    .ach-m-val,
     .ach-m-sub-val {
-        font-size: 0.68rem !important;
-        font-weight: 600 !important;
-        color: #cbd5e1 !important;
-        line-height: 1.15 !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        line-height: 1.2 !important;
         display: block !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-        margin-top: 1px !important;
+        margin: 0 !important;
     }
 
     /* Trek Detail Modal Mobile Optimization (Fits 100% properly with zero overflow) */
