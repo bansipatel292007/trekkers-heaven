@@ -3996,11 +3996,14 @@ body {
 .ach-metric-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.025);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    padding: 10px 14px;
+    border-radius: 12px;
+    padding: 10px 12px;
+    min-height: 58px;
+    height: 100%;
+    box-sizing: border-box;
     transition: all 0.2s ease;
 }
 
@@ -4049,26 +4052,43 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    overflow: hidden;
+    flex: 1;
+    justify-content: center;
 }
 
 .ach-m-label {
-    font-size: 0.64rem;
+    font-size: 0.60rem;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
     line-height: 1;
+    margin-bottom: 3px;
+    white-space: nowrap;
 }
 
 .ach-m-val {
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: 0.82rem;
+    font-weight: 800;
     color: #ffffff;
-    margin-top: 4px;
+    line-height: 1.15;
+    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.2;
+}
+
+.ach-m-sub-val {
+    font-size: 0.70rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    line-height: 1.15;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
 }
 
 @media (max-width: 900px) {
@@ -6003,40 +6023,78 @@ body {
         flex-shrink: 0 !important;
     }
 
-    /* 2x2 Clean Metrics Grid on Mobile */
+    /* 2x2 Equal-Height Clean Metrics Grid on Mobile */
     .ach-metrics-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 6px !important;
+        gap: 8px !important;
         width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .ach-metric-item {
         padding: 8px 10px !important;
         gap: 8px !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         background: rgba(255, 255, 255, 0.03) !important;
         border: 1px solid rgba(255, 255, 255, 0.07) !important;
+        min-height: 56px !important;
+        height: 100% !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
     }
 
     .ach-m-icon {
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 0.75rem !important;
-        border-radius: 7px !important;
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 0.80rem !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
     }
 
     .ach-m-info {
         min-width: 0 !important;
+        overflow: hidden !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }
 
     .ach-m-label {
         font-size: 0.58rem !important;
+        color: #94a3b8 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.3px !important;
+        text-transform: uppercase !important;
+        line-height: 1 !important;
+        margin-bottom: 2px !important;
+        white-space: nowrap !important;
     }
 
     .ach-m-val {
-        font-size: 0.76rem !important;
-        margin-top: 2px !important;
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+        line-height: 1.15 !important;
+        display: block !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin-top: 0 !important;
+    }
+
+    .ach-m-sub-val {
+        font-size: 0.68rem !important;
+        font-weight: 600 !important;
+        color: #cbd5e1 !important;
+        line-height: 1.15 !important;
+        display: block !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin-top: 1px !important;
     }
 
     /* Trek Detail Modal Mobile Optimization (Fits 100% properly with zero overflow) */

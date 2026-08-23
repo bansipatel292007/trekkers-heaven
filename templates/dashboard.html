@@ -588,7 +588,14 @@
                                             <span class="ach-m-icon"><i class="fa-regular fa-clock"></i></span>
                                             <div class="ach-m-info">
                                                 <span class="ach-m-label">Duration</span>
-                                                <strong class="ach-m-val">{{ ach.duration_text or 'N/A' }}</strong>
+                                                {% if ach.duration_text and '/' in ach.duration_text %}
+                                                    {% set dur_parts = ach.duration_text.split('/') %}
+                                                    <strong class="ach-m-val">{{ dur_parts[0].strip() }}</strong>
+                                                    <span class="ach-m-sub-val">{{ dur_parts[1].strip() }}</span>
+                                                {% else %}
+                                                    <strong class="ach-m-val">{{ ach.duration_text or 'N/A' }}</strong>
+                                                    <span class="ach-m-sub-val">Expedition</span>
+                                                {% endif %}
                                             </div>
                                         </div>
 
@@ -597,6 +604,7 @@
                                             <div class="ach-m-info">
                                                 <span class="ach-m-label">Distance</span>
                                                 <strong class="ach-m-val">{{ ach.distance_text or ach.distance or 'N/A' }}</strong>
+                                                <span class="ach-m-sub-val">Total Trail</span>
                                             </div>
                                         </div>
 
@@ -604,7 +612,18 @@
                                             <span class="ach-m-icon"><i class="fa-solid fa-mountain"></i></span>
                                             <div class="ach-m-info">
                                                 <span class="ach-m-label">Altitude</span>
-                                                <strong class="ach-m-val">{{ ach.altitude or 'N/A' }}</strong>
+                                                {% if ach.altitude and '(' in ach.altitude %}
+                                                    {% set alt_parts = ach.altitude.split('(') %}
+                                                    <strong class="ach-m-val">{{ alt_parts[0].strip() }}</strong>
+                                                    <span class="ach-m-sub-val">({{ alt_parts[1].strip() }}</span>
+                                                {% elif ach.altitude and '/' in ach.altitude %}
+                                                    {% set alt_parts = ach.altitude.split('/') %}
+                                                    <strong class="ach-m-val">{{ alt_parts[0].strip() }}</strong>
+                                                    <span class="ach-m-sub-val">{{ alt_parts[1].strip() }}</span>
+                                                {% else %}
+                                                    <strong class="ach-m-val">{{ ach.altitude or 'N/A' }}</strong>
+                                                    <span class="ach-m-sub-val">Peak Altitude</span>
+                                                {% endif %}
                                             </div>
                                         </div>
 
@@ -612,7 +631,21 @@
                                             <span class="ach-m-icon"><i class="fa-solid fa-gauge-high"></i></span>
                                             <div class="ach-m-info">
                                                 <span class="ach-m-label">Difficulty</span>
-                                                <strong class="ach-m-val">{{ ach.difficulty or 'Moderate' }}</strong>
+                                                {% set diff_text = ach.difficulty or 'Moderate' %}
+                                                {% if 'easy' in diff_text|lower and 'mod' in diff_text|lower %}
+                                                    <strong class="ach-m-val">Easy to</strong>
+                                                    <span class="ach-m-sub-val">Moderate</span>
+                                                {% elif 'mod' in diff_text|lower and 'diff' in diff_text|lower %}
+                                                    <strong class="ach-m-val">Moderate to</strong>
+                                                    <span class="ach-m-sub-val">Difficult</span>
+                                                {% elif '-' in diff_text %}
+                                                    {% set d_parts = diff_text.split('-') %}
+                                                    <strong class="ach-m-val">{{ d_parts[0].strip() }} to</strong>
+                                                    <span class="ach-m-sub-val">{{ d_parts[1].strip() }}</span>
+                                                {% else %}
+                                                    <strong class="ach-m-val">{{ diff_text }}</strong>
+                                                    <span class="ach-m-sub-val">Grade Trail</span>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -2016,6 +2049,53 @@
             }
         }
 
+        function getDurationLines(str) {
+            if (!str || str === 'N/A') return { main: 'N/A', sub: 'Expedition' };
+            if (str.includes('/')) {
+                const parts = str.split('/');
+                return { main: parts[0].trim(), sub: parts[1].trim() };
+            }
+            return { main: str, sub: 'Expedition' };
+        }
+
+        function getDistanceLines(str) {
+            if (!str || str === 'N/A') return { main: 'N/A', sub: 'Total Trail' };
+            if (str.includes('(')) {
+                const parts = str.split('(');
+                return { main: parts[0].trim(), sub: `(${parts[1].trim()}` };
+            }
+            return { main: str, sub: 'Total Trail' };
+        }
+
+        function getAltitudeLines(str) {
+            if (!str || str === 'N/A') return { main: 'N/A', sub: 'Peak Altitude' };
+            if (str.includes('(')) {
+                const parts = str.split('(');
+                return { main: parts[0].trim(), sub: `(${parts[1].trim()}` };
+            } else if (str.includes('/')) {
+                const parts = str.split('/');
+                return { main: parts[0].trim(), sub: parts[1].trim() };
+            }
+            return { main: str, sub: 'Peak Altitude' };
+        }
+
+        function getDifficultyLines(str) {
+            if (!str || str === 'N/A') return { main: 'Moderate', sub: 'Grade Trail' };
+            const lower = str.toLowerCase();
+            if (lower.includes('easy') && lower.includes('mod')) {
+                return { main: 'Easy to', sub: 'Moderate' };
+            } else if (lower.includes('mod') && lower.includes('diff')) {
+                return { main: 'Moderate to', sub: 'Difficult' };
+            } else if (str.includes('-')) {
+                const parts = str.split('-');
+                return { main: `${parts[0].trim()} to`, sub: parts[1].trim() };
+            } else if (str.includes('to')) {
+                const parts = str.split(/to/i);
+                return { main: `${parts[0].trim()} to`, sub: parts[1].trim() };
+            }
+            return { main: str, sub: 'Grade Trail' };
+        }
+
         function renderAchievementsShowcase(list) {
             const track = document.getElementById('achievementsHorizontalTrack');
             const countBadge = document.getElementById('achievementsCountBadge');
@@ -2044,6 +2124,11 @@
                 const altitudeText = ach.altitude || (trek ? trek.max_altitude_text : 'N/A');
                 const seasonText = ach.best_season || (trek ? trek.best_season : '');
                 const highlights = (ach.highlights && ach.highlights.length > 0) ? ach.highlights : (trek && trek.highlights ? trek.highlights : []);
+
+                const dur = getDurationLines(durationText);
+                const dist = getDistanceLines(distanceText);
+                const alt = getAltitudeLines(altitudeText);
+                const diff = getDifficultyLines(difficultyText);
 
                 return `
                     <div class="ach-horizontal-row-item" id="ach-card-${ach.id}">
@@ -2091,7 +2176,8 @@
                                 <span class="ach-m-icon"><i class="fa-regular fa-clock"></i></span>
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Duration</span>
-                                    <strong class="ach-m-val">${escapeHtml(durationText)}</strong>
+                                    <strong class="ach-m-val">${escapeHtml(dur.main)}</strong>
+                                    <span class="ach-m-sub-val">${escapeHtml(dur.sub)}</span>
                                 </div>
                             </div>
 
@@ -2099,7 +2185,8 @@
                                 <span class="ach-m-icon"><i class="fa-solid fa-route"></i></span>
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Distance</span>
-                                    <strong class="ach-m-val">${escapeHtml(distanceText)}</strong>
+                                    <strong class="ach-m-val">${escapeHtml(dist.main)}</strong>
+                                    <span class="ach-m-sub-val">${escapeHtml(dist.sub)}</span>
                                 </div>
                             </div>
 
@@ -2107,7 +2194,8 @@
                                 <span class="ach-m-icon"><i class="fa-solid fa-mountain"></i></span>
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Altitude</span>
-                                    <strong class="ach-m-val">${escapeHtml(altitudeText)}</strong>
+                                    <strong class="ach-m-val">${escapeHtml(alt.main)}</strong>
+                                    <span class="ach-m-sub-val">${escapeHtml(alt.sub)}</span>
                                 </div>
                             </div>
 
@@ -2115,7 +2203,8 @@
                                 <span class="ach-m-icon"><i class="fa-solid fa-gauge-high"></i></span>
                                 <div class="ach-m-info">
                                     <span class="ach-m-label">Difficulty</span>
-                                    <strong class="ach-m-val">${escapeHtml(difficultyText)}</strong>
+                                    <strong class="ach-m-val">${escapeHtml(diff.main)}</strong>
+                                    <span class="ach-m-sub-val">${escapeHtml(diff.sub)}</span>
                                 </div>
                             </div>
                         </div>
