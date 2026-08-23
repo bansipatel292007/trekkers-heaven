@@ -1046,22 +1046,31 @@ function renderChatbotMessages() {
 
 function formatChatMarkdown(text) {
     if (!text) return '';
-    let escaped = text
+    let html = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
+    // Headings (### Heading, ## Heading, # Heading)
+    html = html.replace(/^###\s+(.*$)/gim, '<h5 style="margin: 8px 0 4px 0; font-size: 0.92rem; font-weight: 800; color: #c4b5fd;">$1</h5>');
+    html = html.replace(/^##\s+(.*$)/gim, '<h4 style="margin: 10px 0 4px 0; font-size: 1rem; font-weight: 800; color: #ffffff;">$1</h4>');
+    html = html.replace(/^#\s+(.*$)/gim, '<h3 style="margin: 12px 0 6px 0; font-size: 1.08rem; font-weight: 800; color: #ffffff;">$1</h3>');
+
     // Bold **text**
-    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     // Italic *text*
-    escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Markdown bullet lists (- item or * item)
+    html = html.replace(/^\s*[-*]\s+(.*$)/gim, '• $1');
+
     // Line breaks
-    escaped = escaped.replace(/\n/g, '<br>');
-    return escaped;
+    html = html.replace(/\n/g, '<br>');
+    return html;
 }
 
 function toggleChatbotPopover(event) {
-    if (event) event.stopPropagation();
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
     const popover = document.getElementById('chatbotPopover');
     const btn = document.getElementById('trekChatbotBtn');
     if (!popover) return;
@@ -1106,15 +1115,19 @@ function toggleChatbotPopover(event) {
 }
 
 function handleChatbotChipClick(promptText, event) {
-    if (event) event.stopPropagation();
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
     const input = document.getElementById('chatbotInput');
-    if (input) input.value = promptText;
-    sendChatbotMessage(event);
+    if (input) {
+        input.value = promptText;
+        sendChatbotMessage();
+    }
 }
 
 async function sendChatbotMessage(event) {
-    if (event) {
+    if (event && typeof event.preventDefault === 'function') {
         event.preventDefault();
+    }
+    if (event && typeof event.stopPropagation === 'function') {
         event.stopPropagation();
     }
     const input = document.getElementById('chatbotInput');
