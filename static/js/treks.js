@@ -1275,3 +1275,41 @@ document.addEventListener('click', (e) => {
         }
     }
 });
+
+function toggleMobileFilterDrawer(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const sidebar = document.getElementById('sidebarFilters');
+    if (!sidebar) return;
+
+    // Close any open popovers
+    ['chatbotPopover', 'checklistPopover', 'savedTreksPopover', 'profilePopoverMenu'].forEach(id => {
+        const p = document.getElementById(id);
+        if (p) p.classList.remove('show');
+    });
+
+    sidebar.classList.toggle('mobile-drawer-open');
+    let backdrop = document.getElementById('filterDrawerBackdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'filterDrawerBackdrop';
+        backdrop.className = 'filter-drawer-backdrop';
+        backdrop.onclick = () => {
+            sidebar.classList.remove('mobile-drawer-open');
+            backdrop.remove();
+        };
+        document.body.appendChild(backdrop);
+    }
+    if (!sidebar.classList.contains('mobile-drawer-open')) {
+        backdrop.remove();
+    }
+}
+
+function handleProfileNavClick(event, isLoggedIn) {
+    if (!isLoggedIn) {
+        if (event) event.preventDefault();
+        window.location.href = '/login';
+    }
+}

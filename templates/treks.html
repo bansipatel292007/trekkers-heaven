@@ -35,87 +35,40 @@
 
             <div class="nav-auth-actions">
                 <!-- Desktop Triggers -->
-                <button type="button" class="btn-nav-chatbot" id="trekChatbotBtn" onclick="toggleChatbotPopover(event)" title="AI Trek Assistant - Sherpa AI">
+                <button type="button" class="btn-nav-chatbot desktop-only-action" id="trekChatbotBtn" onclick="toggleChatbotPopover(event)" title="AI Trek Assistant - Sherpa AI">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </button>
 
-                <button type="button" class="btn-nav-checklist" id="trekChecklistBtn" onclick="toggleChecklistPopover(event)" title="Trek Packing Checklist & Essentials">
+                <button type="button" class="btn-nav-checklist desktop-only-action" id="trekChecklistBtn" onclick="toggleChecklistPopover(event)" title="Trek Packing Checklist & Essentials">
                     <i class="fa-solid fa-list-check"></i>
                 </button>
 
-                <button type="button" class="btn-nav-heart" id="savedTreksBtn" onclick="toggleSavedTreksPopover(event)" title="Saved Treks / Wishlist">
+                <button type="button" class="btn-nav-heart desktop-only-action" id="savedTreksBtn" onclick="toggleSavedTreksPopover(event)" title="Saved Treks / Wishlist">
                     <i class="fa-solid fa-heart"></i>
                     <span class="saved-badge-count" id="savedTreksBadge">0</span>
                 </button>
 
                 {% if user %}
-                    <button type="button" class="btn-profile-circle" id="profileDropdownBtn" onclick="toggleProfileMenu(event)" title="{{ user.name }} - Account Profile">
+                    <a href="{{ url_for('dashboard') }}" class="btn-profile-circle" id="profileDropdownBtn" title="{{ user.name }} - Account Profile">
                         <span class="user-avatar-circle">{{ user.name[:1].upper() }}</span>
-                    </button>
+                    </a>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="btn-nav-ghost">Log In</a>
-                    <a href="{{ url_for('register') }}" class="btn-nav-primary">Register</a>
+                    <a href="{{ url_for('login') }}" class="btn-nav-login-top">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                    </a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
-    <!-- Page Header Banner -->
-    <header class="explorer-hero">
+    <!-- Page Header Banner (Hero Title: Conquer Your Dream Summits) -->
+    <header class="explorer-hero" id="treksExplorerSection">
         <div class="hero-content">
             <span class="hero-badge"><i class="fa-solid fa-compass"></i> Discover Iconic Summits & High Passes</span>
-            <h1 class="hero-title">Concord Your Dream Summits</h1>
+            <h1 class="hero-title">Conquer Your Dream Summits</h1>
+            <p class="hero-subtitle">Handcrafted Himalayan expeditions, real trail metrics, live interactive guides & offline summit checklists.</p>
         </div>
     </header>
-
-    <!-- MOBILE-ONLY SEARCH & QUICK FILTER DOCK (Visible only on mobile <= 768px) -->
-    <div class="mobile-stories-wrapper" id="mobileStoriesWrapper">
-        <!-- Search Input Bar -->
-        <div class="mobile-search-bar-wrap">
-            <div class="mobile-search-inner">
-                <i class="fa-solid fa-magnifying-glass mobile-search-icon"></i>
-                <input type="text" id="mobileSearchInput" placeholder="Search 30+ summits, peaks, altitude..." oninput="syncMobileSearch(this.value)">
-                <button type="button" class="mobile-filter-drawer-toggle" onclick="toggleMobileFilterDrawer()" title="All Filters">
-                    <i class="fa-solid fa-sliders"></i>
-                    <span>Filters</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Horizontal Swipeable Region Tabs -->
-        <div class="mobile-region-tabs-scroll">
-            <button type="button" class="mobile-region-pill active" onclick="filterByRegion('all', this)">
-                <i class="fa-solid fa-mountain-sun"></i> All Treks <span class="pill-count">30</span>
-            </button>
-            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Uttarakhand', this)">
-                <i class="fa-solid fa-tree"></i> Uttarakhand
-            </button>
-            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Himachal Pradesh', this)">
-                <i class="fa-solid fa-snowflake"></i> Himachal
-            </button>
-            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Ladakh', this)">
-                <i class="fa-solid fa-crown"></i> Ladakh
-            </button>
-            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Jammu & Kashmir', this)">
-                <i class="fa-solid fa-water"></i> Kashmir
-            </button>
-            <button type="button" class="mobile-region-pill" onclick="filterByRegion('Nepal Himalayas', this)">
-                <i class="fa-solid fa-mountain"></i> Nepal
-            </button>
-            <button type="button" class="mobile-region-pill" onclick="filterByRegion('International (Alps)', this)">
-                <i class="fa-solid fa-earth-americas"></i> Global
-            </button>
-        </div>
-
-        <!-- Horizontal Swipeable Difficulty Chips -->
-        <div class="mobile-quick-difficulty-row">
-            <button type="button" class="mobile-diff-chip active" onclick="filterByDifficultyQuick('all', this)">All Difficulties</button>
-            <button type="button" class="mobile-diff-chip easy" onclick="filterByDifficultyQuick('easy', this)">🟢 Beginner</button>
-            <button type="button" class="mobile-diff-chip moderate" onclick="filterByDifficultyQuick('moderate', this)">🟡 Moderate</button>
-            <button type="button" class="mobile-diff-chip difficult" onclick="filterByDifficultyQuick('difficult', this)">🟠 Difficult</button>
-            <button type="button" class="mobile-diff-chip expert" onclick="filterByDifficultyQuick('expert', this)">🔴 6,000m+ Peak</button>
-        </div>
-    </div>
 
     <!-- Main Explorer Section -->
     <main class="explorer-container">
@@ -542,26 +495,37 @@
 
     <!-- Mobile App-Style Bottom Navigation Bar (Visible only on mobile screens <= 768px) -->
     <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
-        <a href="#treksExplorerSection" class="mobile-nav-item active" onclick="scrollToTreksExplorer(event)">
-            <i class="fa-solid fa-mountain-sun"></i>
-            <span>Treks</span>
-        </a>
-        <button type="button" class="mobile-nav-item mobile-ai-nav-item" onclick="toggleChatbotPopover(event)">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Sherpa AI</span>
-        </button>
-        <button type="button" class="mobile-nav-item" onclick="toggleChecklistPopover(event)">
+        <!-- 1. Checklist -->
+        <button type="button" class="mobile-nav-item" id="mobileNavChecklist" onclick="toggleChecklistPopover(event)">
             <i class="fa-solid fa-list-check"></i>
             <span>Checklist</span>
         </button>
-        <button type="button" class="mobile-nav-item" onclick="toggleSavedTreksPopover(event)">
+
+        <!-- 2. Filters -->
+        <button type="button" class="mobile-nav-item" id="mobileNavFilters" onclick="toggleMobileFilterDrawer(event)">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Filters</span>
+        </button>
+
+        <!-- 3. Treks (Center Prominent) -->
+        <a href="#treksExplorerSection" class="mobile-nav-item mobile-center-nav-item active" id="mobileNavTreks" onclick="scrollToTreksExplorer(event)">
+            <div class="center-nav-icon">
+                <i class="fa-solid fa-mountain-sun"></i>
+            </div>
+            <span>Treks</span>
+        </a>
+
+        <!-- 4. Saved -->
+        <button type="button" class="mobile-nav-item" id="mobileNavSaved" onclick="toggleSavedTreksPopover(event)">
             <i class="fa-solid fa-heart"></i>
             <span>Saved</span>
             <span class="mobile-saved-badge" id="mobileSavedBadge">0</span>
         </button>
-        <a href="{{ url_for('dashboard') if user else url_for('login') }}" class="mobile-nav-item">
+
+        <!-- 5. Profile (Redirects to Login if not logged in) -->
+        <a href="{{ url_for('dashboard') if user else url_for('login') }}" class="mobile-nav-item" id="mobileNavProfile" onclick="handleProfileNavClick(event, {{ 'true' if user else 'false' }})">
             <i class="fa-solid fa-user"></i>
-            <span>{{ 'Profile' if user else 'Login' }}</span>
+            <span>Profile</span>
         </a>
     </nav>
 
