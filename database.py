@@ -173,16 +173,21 @@ def add_user_achievement(user_id: int, trek_data: dict):
     """Add a completed trek to user achievements."""
     import re
     now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-    trek_id = trek_data.get('trek_id', '')
-    trek_name = trek_data.get('trek_name', '').strip()
-    start_date = trek_data.get('start_date', '').strip()
-    end_date = trek_data.get('end_date', '').strip()
-    altitude = trek_data.get('altitude', '').strip()
-    altitude_ft = trek_data.get('altitude_ft', 0)
-    distance = trek_data.get('distance', '').strip()
-    difficulty = trek_data.get('difficulty', '').strip()
-    location = trek_data.get('location', '').strip()
-    image_url = trek_data.get('image_url', '').strip()
+    trek_id = str(trek_data.get('trek_id') or '')
+    trek_name = str(trek_data.get('trek_name') or '').strip()
+    start_date = str(trek_data.get('start_date') or '').strip()
+    end_date = str(trek_data.get('end_date') or '').strip()
+    altitude = str(trek_data.get('altitude') or '').strip()
+    
+    try:
+        altitude_ft = int(trek_data.get('altitude_ft') or 0)
+    except (ValueError, TypeError):
+        altitude_ft = 0
+
+    distance = str(trek_data.get('distance') or '').strip()
+    difficulty = str(trek_data.get('difficulty') or '').strip()
+    location = str(trek_data.get('location') or '').strip()
+    image_url = str(trek_data.get('image_url') or '').strip()
 
     if not altitude_ft and altitude:
         m = re.search(r'([\d,]+)\s*ft', altitude)

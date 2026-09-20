@@ -332,11 +332,17 @@ function sortCards(sortBy) {
     cardsArray.forEach(card => grid.appendChild(card));
 }
 
-function filterByRegion(regionName) {
-    const regionFilter = document.getElementById('regionFilter');
-    if (regionFilter) {
-        regionFilter.value = regionName;
+function filterByRegion(region, element) {
+    const regionSelect = document.getElementById('regionFilter');
+    if (regionSelect) {
+        regionSelect.value = region === 'all' ? 'all' : region;
         applyFilters();
+    }
+    
+    // Update active mobile region pill if present
+    if (element) {
+        document.querySelectorAll('.mobile-region-pill').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
     }
 }
 
@@ -356,21 +362,6 @@ function syncMobileSearch(val) {
     applyFilters();
 }
 
-function filterByRegion(region, element) {
-    const regionSelect = document.getElementById('regionFilter');
-    if (regionSelect) {
-        regionSelect.value = region === 'all' ? 'all' : region;
-    }
-    
-    // Update active mobile region pill
-    if (element) {
-        document.querySelectorAll('.mobile-region-pill').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
-    }
-    
-    applyFilters();
-}
-
 function filterByDifficultyQuick(diff, element) {
     const diffSelect = document.getElementById('difficultyFilter');
     if (diffSelect) {
@@ -385,10 +376,16 @@ function filterByDifficultyQuick(diff, element) {
     applyFilters();
 }
 
-function toggleMobileFilterDrawer() {
-    const sidebar = document.getElementById('sidebarFilters');
-    if (!sidebar) return;
-    sidebar.classList.toggle('mobile-drawer-open');
+function scrollToTreksExplorer(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    const section = document.getElementById('treksExplorerSection');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 function resetAllFilters() {
@@ -628,6 +625,9 @@ function openTrekModal(trekId) {
                 </div>
             </div>
             <div class="modal-action-btns">
+                <button type="button" class="btn-modal-download-pdf" id="btnDownloadPdf-${trek.id}" onclick="downloadTrekPdfGuide('${trek.id}', event)" title="Download Complete PDF Guide & Itinerary">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF Guide
+                </button>
                 <button type="button" class="btn-modal-back-treks" onclick="closeTrekModal()">
                     <i class="fa-solid fa-arrow-left"></i> Back to Treks
                 </button>
@@ -1348,5 +1348,398 @@ function handleProfileNavClick(event, isLoggedIn) {
     if (!isLoggedIn) {
         if (event) event.preventDefault();
         window.location.href = '/login';
+    }
+}
+
+/* ==========================================
+   Toast Notification Helper for Treks Page
+   ========================================== */
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type} show`;
+
+    let iconClass = 'fa-solid fa-circle-info';
+    if (type === 'success') iconClass = 'fa-solid fa-circle-check';
+    else if (type === 'danger') iconClass = 'fa-solid fa-circle-xmark';
+    else if (type === 'warning') iconClass = 'fa-solid fa-triangle-exclamation';
+
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="${iconClass}"></i></div>
+        <div class="toast-text">${message}</div>
+        <button class="toast-close">&times;</button>
+    `;
+
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 200);
+    });
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        if (toast && toast.parentElement) {
+            toast.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            setTimeout(() => toast.remove(), 250);
+        }
+    }, 3200);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+    });
+}
+
+/* ==========================================
+   Downloadable PDF Trek Guide & Itinerary Generator
+   ========================================== */
+async function downloadTrekPdfGuide(trekId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const trek = allTreks.find(t => t.id === trekId);
+    if (!trek) return;
+
+    const btn = document.getElementById(`btnDownloadPdf-${trek.id}`) || event?.currentTarget;
+    const originalContent = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating PDF...';
+    }
+
+    showToast(`Preparing Expedition Guide for ${trek.name}...`, 'info');
+
+    try {
+        // Fetch full rich guide data (including official permits & emergency SOS)
+        let guideData = null;
+        try {
+            const res = await fetch(`/api/treks/${trek.id}/guide`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    guideData = data;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not fetch guide endpoint, using local fallback:', e);
+        }
+
+        const permits = guideData?.permits || {
+            permits_required: [
+                'State Forest Department Transit & Camping Permit',
+                'Local Wildlife Sanctuary / Environmental Entry Pass'
+            ],
+            documents_needed: [
+                'Original Government Photo ID Proof (Aadhaar / Passport / Voter ID) + 2 photocopies',
+                'Medical Fitness Certificate signed by a certified MBBS doctor',
+                'Trekker Disclaimer & Indemnity Undertaking Form'
+            ],
+            fee_details: 'Approx. ₹150–₹350 per day (Forest & Sanctuary entry fees)',
+            issuing_office: `${trek.start_point || 'Basecamp'} Forest Checkpost Gate`
+        };
+
+        const emergencySos = guideData?.emergency_sos || {
+            helpline_india: '112 / 1070 (Disaster Management)',
+            sdrf_uttarakhand: '+91-135-2710334 / 1070',
+            sdrf_himachal: '+91-177-2812344 / 1070',
+            jk_rescue: '+91-194-2452138 / 100',
+            ladakh_rescue: '+91-1982-255588',
+            nepal_rescue: '+977-1-4247041 / 100',
+            ambulance: '108',
+            medical_guideline: 'Never ascend with AMS symptoms. Inform trek leader immediately.'
+        };
+
+        // Build cleanly styled PDF printable element
+        const printContainer = document.createElement('div');
+        printContainer.id = 'trekPdfExportContainer';
+        printContainer.style.cssText = `
+            width: 794px;
+            padding: 32px 36px;
+            background: #ffffff;
+            color: #0f172a;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            box-sizing: border-box;
+            position: absolute;
+            left: -9999px;
+            top: 0;
+        `;
+
+        // Duration formatting
+        const durationParts = (trek.duration_text || '').split(' / ');
+        const durationDays = durationParts[0] || `${trek.duration_days} Days`;
+        const durationNights = durationParts[1] || `${(trek.duration_days || 1) - 1} Nights`;
+
+        // Altitude formatting
+        const altitudeText = trek.max_altitude_text || `${(trek.max_altitude_ft || 0).toLocaleString()} ft`;
+
+        // Itinerary rows HTML
+        let itineraryRowsHtml = '';
+        if (trek.itinerary && trek.itinerary.length > 0) {
+            itineraryRowsHtml = trek.itinerary.map(item => `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 9px 8px; font-weight: 800; color: #6366f1; vertical-align: top; width: 62px; font-size: 11px;">
+                        DAY ${item.day}
+                    </td>
+                    <td style="padding: 9px 8px; vertical-align: top;">
+                        <strong style="font-size: 12px; color: #0f172a; display: block; margin-bottom: 2px;">${escapeHtml(item.title)}</strong>
+                        <span style="font-size: 11px; color: #475569; display: block; line-height: 1.4;">${escapeHtml(item.desc)}</span>
+                    </td>
+                    <td style="padding: 9px 8px; vertical-align: top; width: 140px; font-size: 11px; color: #334155;">
+                        <strong style="display: block; color: #0f172a; font-size: 11px;">⛺ ${escapeHtml(item.campsite)}</strong>
+                        <span style="color: #64748b; font-size: 10px;">▲ ${escapeHtml(item.altitude)}</span>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            itineraryRowsHtml = `
+                <tr>
+                    <td colspan="3" style="padding: 14px; text-align: center; color: #64748b; font-size: 12px;">
+                        Standard high-altitude guided expedition route.
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Permits bullets
+        const permitsHtml = permits.permits_required.map(p => `<li style="margin-bottom: 4px; font-size: 11px; color: #334155;">${escapeHtml(p)}</li>`).join('');
+        const docsHtml = permits.documents_needed.map(d => `<li style="margin-bottom: 4px; font-size: 11px; color: #334155;">${escapeHtml(d)}</li>`).join('');
+
+        // Highlights
+        const highlightsHtml = (trek.highlights || []).map(h => `
+            <div style="background: #f1f5f9; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                <span style="color: #10b981;">✓</span> ${escapeHtml(h)}
+            </div>
+        `).join('');
+
+        printContainer.innerHTML = `
+            <!-- Top Branded Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; padding-bottom: 14px; margin-bottom: 18px;">
+                <div>
+                    <div style="font-size: 18px; font-weight: 900; letter-spacing: -0.5px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                        <span>TREKKERS</span><span style="color: #6366f1;">HEAVEN</span>
+                    </div>
+                    <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px;">Official Expedition Field Guide & Detailed Itinerary</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #e0e7ff; color: #4338ca; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        ${escapeHtml(trek.badge || 'Himalayan Classic')}
+                    </span>
+                    <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-top: 3px;">⭐ ${trek.rating || '4.9'} / 5.0 Rating</div>
+                </div>
+            </div>
+
+            <!-- Trek Title & Region Banner -->
+            <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; border-radius: 10px; padding: 18px 22px; margin-bottom: 18px;">
+                <span style="font-size: 11px; font-weight: 700; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 4px;">
+                    📍 ${escapeHtml(trek.region)}, ${escapeHtml(trek.country)}
+                </span>
+                <h1 style="font-size: 22px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.4px; color: #ffffff;">
+                    ${escapeHtml(trek.name)}
+                </h1>
+                <p style="font-size: 12px; color: #c7d2fe; margin: 0; line-height: 1.4;">
+                    ${escapeHtml(trek.tagline || trek.description || '')}
+                </p>
+            </div>
+
+            <!-- Key Technical Metrics Grid (6 Boxes) -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px;">Max Altitude</span>
+                    <strong style="font-size: 14px; color: #0f172a; font-weight: 800;">${escapeHtml(altitudeText)}</strong>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px;">Total Duration</span>
+                    <strong style="font-size: 14px; color: #0f172a; font-weight: 800;">${escapeHtml(durationDays)} (${escapeHtml(durationNights)})</strong>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px;">Trail Distance</span>
+                    <strong style="font-size: 14px; color: #0f172a; font-weight: 800;">${escapeHtml(trek.distance_text || trek.distance_km + ' km')}</strong>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px;">Difficulty Level</span>
+                    <strong style="font-size: 13px; color: #6366f1; font-weight: 800;">${escapeHtml(trek.difficulty)} (${escapeHtml(trek.fitness_level || 'Fit')})</strong>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px;">Best Season</span>
+                    <strong style="font-size: 13px; color: #0f172a; font-weight: 800;">${escapeHtml(trek.best_season || 'All Season')}</strong>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                    <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px;">Basecamp / Trailhead</span>
+                    <strong style="font-size: 12px; color: #0f172a; font-weight: 800;">${escapeHtml(trek.start_point || 'Basecamp')}</strong>
+                </div>
+            </div>
+
+            <!-- Expedition Overview -->
+            <div style="margin-bottom: 18px;">
+                <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.5px; margin: 0 0 6px 0; border-left: 3px solid #6366f1; padding-left: 8px;">
+                    Expedition Overview
+                </h3>
+                <p style="font-size: 11px; color: #334155; line-height: 1.5; margin: 0;">
+                    ${escapeHtml(trek.description || '')}
+                </p>
+            </div>
+
+            <!-- Scenic Highlights -->
+            ${highlightsHtml ? `
+            <div style="margin-bottom: 18px;">
+                <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.5px; margin: 0 0 8px 0; border-left: 3px solid #10b981; padding-left: 8px;">
+                    Key Trail Highlights
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                    ${highlightsHtml}
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Day-Wise Expedition Itinerary Table -->
+            <div style="margin-bottom: 20px; page-break-inside: avoid;">
+                <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: #1e293b; letter-spacing: 0.5px; margin: 0 0 8px 0; border-left: 3px solid #06b6d4; padding-left: 8px;">
+                    Day-Wise Expedition Itinerary & Elevation Profile
+                </h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: #f1f5f9; color: #334155; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #cbd5e1;">
+                            <th style="padding: 8px; text-align: left; width: 62px;">Day</th>
+                            <th style="padding: 8px; text-align: left;">Trail Route & Description</th>
+                            <th style="padding: 8px; text-align: left; width: 140px;">Night Camp & Altitude</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itineraryRowsHtml}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Permits & Documents Section (Two Column) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; page-break-inside: avoid;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+                    <h4 style="font-size: 12px; font-weight: 800; color: #1e293b; margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px;">
+                        📋 Required Government Permits
+                    </h4>
+                    <ul style="margin: 0 0 8px 0; padding-left: 16px;">
+                        ${permitsHtml}
+                    </ul>
+                    <div style="font-size: 10px; color: #64748b;">
+                        <strong>Fees:</strong> ${escapeHtml(permits.fee_details)}<br>
+                        <strong>Checkpost:</strong> ${escapeHtml(permits.issuing_office)}
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+                    <h4 style="font-size: 12px; font-weight: 800; color: #1e293b; margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px;">
+                        📄 Mandatory Identification & Medical Docs
+                    </h4>
+                    <ul style="margin: 0; padding-left: 16px;">
+                        ${docsHtml}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- High Altitude Gear & Safety Rules -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; page-break-inside: avoid;">
+                <h4 style="font-size: 12px; font-weight: 800; color: #166534; margin: 0 0 6px 0;">
+                    🎒 3-Layer Packing & Altitude Sickness (AMS) Protocol
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 10.5px; color: #14532d; line-height: 1.4;">
+                    <div>
+                        <strong>• Layering:</strong> Base (thermal) + Mid (fleece) + Outer (-10°C down jacket).<br>
+                        <strong>• Footwear:</strong> Waterproof high-ankle shoes with deep lugs + 4-5 pairs socks.<br>
+                        <strong>• Gear:</strong> 50-60L rucksack with rain cover, UV400 sunglasses, headlamp.
+                    </div>
+                    <div>
+                        <strong>• Hydration:</strong> Drink 4-5 liters of water daily with ORS/electrolytes.<br>
+                        <strong>• Golden Rule:</strong> <em>Climb High, Sleep Low</em>. Never ascend with headache or nausea.<br>
+                        <strong>• Diamox:</strong> Consult doctor before taking preventive 125-250mg dose.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency SOS Helpline Directory -->
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; page-break-inside: avoid;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 11px; color: #991b1b; display: block;">🚨 Mountain Rescue & Emergency SOS Numbers</strong>
+                        <span style="font-size: 10px; color: #7f1d1d;">National Disaster Management: <strong>112 / 1070</strong> | Medical Ambulance: <strong>108</strong> | SDRF Helpline: <strong>1070</strong></span>
+                    </div>
+                    <span style="font-size: 10px; font-weight: 700; color: #dc2626; background: #ffffff; padding: 3px 8px; border-radius: 4px; border: 1px solid #fca5a5;">24x7 Helpline</span>
+                </div>
+            </div>
+
+            <!-- Document Footer -->
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; color: #94a3b8;">
+                <span>Generated by <strong>Trekkers Heaven</strong> (www.trekkersheaven.com) • Clean Mountain Trail Initiative</span>
+                <span>Leave No Trace • Respect Nature • Mountain Safety First</span>
+            </div>
+        `;
+
+        document.body.appendChild(printContainer);
+
+        // Check if html2pdf is loaded
+        if (typeof html2pdf === 'function') {
+            const safeName = trek.name.replace(/[^a-zA-Z0-9]/g, '_');
+            const opt = {
+                margin:       [8, 8, 8, 8],
+                filename:     `TrekkersHeaven_${safeName}_Expedition_Guide.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            await html2pdf().set(opt).from(printContainer).save();
+            printContainer.remove();
+            showToast(`PDF Guide for ${trek.name} downloaded successfully! 🏔️`, 'success');
+        } else {
+            // Fallback: Use browser print engine
+            printContainer.remove();
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>${escapeHtml(trek.name)} - Expedition Guide</title>
+                        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+                        <style>
+                            body { margin: 0; padding: 20px; font-family: 'Plus Jakarta Sans', sans-serif; }
+                            @media print { body { padding: 0; } }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContainer.innerHTML}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            }
+        }
+    } catch (err) {
+        console.error('Error generating PDF guide:', err);
+        showToast('Could not generate PDF guide. Please try again.', 'danger');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalContent || '<i class="fa-solid fa-file-pdf"></i> Download PDF Guide';
+        }
     }
 }

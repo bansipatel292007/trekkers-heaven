@@ -3089,6 +3089,43 @@ body {
     transform: translateY(-2px);
 }
 
+.btn-modal-download-pdf {
+    height: 44px;
+    padding: 0 20px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.28) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.55);
+    border-radius: var(--radius-md);
+    color: #34d399;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.22);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.btn-modal-download-pdf:hover {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border-color: #10b981;
+    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55);
+    transform: translateY(-2px);
+}
+
+.btn-modal-download-pdf:active {
+    transform: scale(0.97);
+}
+
+.btn-modal-download-pdf:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 
 /* Empty state */
 .empty-state {
@@ -6725,6 +6762,14 @@ body {
     .btn-modal-back-treks:active {
         transform: scale(0.96) !important;
         background: linear-gradient(135deg, #6d44f5 0%, #4f46e5 100%) !important;
+    }
+
+    .btn-modal-download-pdf {
+        height: 42px !important;
+        padding: 0 14px !important;
+        font-size: 0.78rem !important;
+        border-radius: 12px !important;
+        gap: 6px !important;
     }
 
     /* ==========================================

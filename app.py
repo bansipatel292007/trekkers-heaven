@@ -188,8 +188,8 @@ def enrich_achievement(ach):
         ach_copy['highlights'] = matching.get('highlights', [])
         ach_copy['tagline'] = matching.get('tagline', '')
     else:
-        ach_copy['duration_text'] = ach_copy.get('distance', '')
-        ach_copy['distance_text'] = ach_copy.get('distance', '')
+        ach_copy['duration_text'] = ach_copy.get('duration_text') or ach_copy.get('duration') or ''
+        ach_copy['distance_text'] = ach_copy.get('distance_text') or ach_copy.get('distance') or ''
         ach_copy['difficulty_slug'] = (ach_copy.get('difficulty') or 'moderate').lower().replace(' ', '-')
         ach_copy['best_season'] = ''
         ach_copy['highlights'] = []
@@ -373,6 +373,47 @@ def api_trek_detail(trek_id):
         return jsonify({'error': 'Trek not found'}), 404
     return jsonify(trek)
 
+@app.route('/api/treks/<trek_id>/guide')
+def api_trek_guide(trek_id):
+    """Get complete trek guide data including permits, emergency contacts, and packing guidelines."""
+    trek = next((t for t in treks_data.TREKS_DATA if t['id'] == trek_id), None)
+    if not trek:
+        return jsonify({'success': False, 'error': 'Trek not found'}), 404
+    
+    permits = gemini_service.PERMITS_DATA.get(trek_id, {
+        'trek_name': trek['name'],
+        'region': f"{trek.get('region', '')}, {trek.get('country', '')}",
+        'permits_required': [
+            'State Forest Department Transit & Camping Permit',
+            'Local Wildlife Sanctuary / Environmental Entry Pass'
+        ],
+        'documents_needed': [
+            'Original Government Photo ID Proof (Aadhaar / Passport / Voter ID) + 2 photocopies',
+            'Medical Fitness Certificate signed by a certified MBBS doctor',
+            'Trekker Disclaimer & Indemnity Undertaking Form'
+        ],
+        'fee_details': 'Approx. ₹150–₹350 per day (Forest & Sanctuary fees)',
+        'issuing_office': f"{trek.get('start_point', 'Basecamp')} Forest Checkpost Gate"
+    })
+    
+    emergency_sos = {
+        'helpline_india': '112 / 1070 (Disaster Management)',
+        'sdrf_uttarakhand': '+91-135-2710334 / 1070',
+        'sdrf_himachal': '+91-177-2812344 / 1070',
+        'jk_rescue': '+91-194-2452138 / 100',
+        'ladakh_rescue': '+91-1982-255588',
+        'nepal_rescue': '+977-1-4247041 (HRA Kathmandu) / 100',
+        'ambulance': '108',
+        'medical_guideline': 'Never ascend with AMS symptoms. Inform trek leader immediately.'
+    }
+    
+    return jsonify({
+        'success': True,
+        'trek': trek,
+        'permits': permits,
+        'emergency_sos': emergency_sos
+    })
+
 @app.route('/api/user/achievements', methods=['GET', 'POST'])
 def api_user_achievements():
     """API endpoint for fetching and creating user achievements."""
@@ -416,7 +457,8 @@ def api_delete_user_achievement(achievement_id):
         return jsonify({'error': 'Unauthorized'}), 401
     user_id = session['user_id']
     database.delete_user_achievement(achievement_id, user_id)
-    achievements = database.get_user_achievements(user_id)
+    raw = database.get_user_achievements(user_id)
+    achievements = [enrich_achievement(a) for a in raw]
     return jsonify({'success': True, 'achievements': achievements})
 
 UPLOAD_CERT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'certificates')
@@ -451,7 +493,8 @@ def api_upload_achievement_certificate(achievement_id):
     
     cert_url = f"/static/uploads/certificates/{safe_filename}"
     database.update_achievement_certificate(achievement_id, user_id, cert_url, orig_name)
-    achievements = database.get_user_achievements(user_id)
+    raw = database.get_user_achievements(user_id)
+    achievements = [enrich_achievement(a) for a in raw]
     return jsonify({
         'success': True,
         'certificate_url': cert_url,
@@ -557,3 +600,5 @@ def api_chat():
 if __name__ == '__main__':
     print("Starting Auth & Treks Server on http://0.0.0.0:5000 (Local: http://127.0.0.1:5000) ...")
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+

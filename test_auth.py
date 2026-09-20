@@ -152,5 +152,91 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(user['state'], 'Uttarakhand')
         self.assertEqual(user['country'], 'India')
 
+    def test_11_change_password(self):
+        """Test change password API."""
+        self.client.post('/login', json={'email': 'alex.mercer@example.com', 'password': 'StrongPassword123!'})
+        
+        # Change password
+        pwd_payload = {
+            'current_password': 'StrongPassword123!',
+            'new_password': 'BrandNewPassword456!',
+            'confirm_new_password': 'BrandNewPassword456!'
+        }
+        res = self.client.post('/api/user/change-password', json=pwd_payload)
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertTrue(data['success'])
+
+        # Logout and test login with new password
+        self.client.get('/logout')
+        login_res = self.client.post('/login', json={'email': 'alex.mercer@example.com', 'password': 'BrandNewPassword456!'})
+        self.assertEqual(login_res.status_code, 200)
+
+    def test_12_achievements_api(self):
+        """Test adding and retrieving user achievements."""
+        self.client.post('/login', json={'email': 'alex.mercer@example.com', 'password': 'BrandNewPassword456!'})
+        
+        ach_payload = {
+            'trek_id': 'kedarkantha',
+            'trek_name': 'Kedarkantha Trek',
+            'start_date': '2026-01-10',
+            'end_date': '2026-01-15'
+        }
+        res = self.client.post('/api/user/achievements', json=ach_payload)
+        self.assertEqual(res.status_code, 201)
+        data = json.loads(res.data)
+        self.assertTrue(data['success'])
+        self.assertGreaterEqual(len(data['achievements']), 1)
+        
+        # Verify enrichment
+        first_ach = data['achievements'][0]
+        self.assertEqual(first_ach['trek_name'], 'Kedarkantha Trek')
+        self.assertTrue(first_ach['duration_text'])
+
+    def test_13_delete_achievement(self):
+        """Test deleting a user achievement."""
+        self.client.post('/login', json={'email': 'alex.mercer@example.com', 'password': 'BrandNewPassword456!'})
+        
+        get_res = self.client.get('/api/user/achievements')
+        data = json.loads(get_res.data)
+        self.assertTrue(data['success'])
+        if data['achievements']:
+            ach_id = data['achievements'][0]['id']
+            del_res = self.client.delete(f'/api/user/achievements/{ach_id}')
+            self.assertEqual(del_res.status_code, 200)
+            del_data = json.loads(del_res.data)
+            self.assertTrue(del_data['success'])
+
+    def test_14_chat_api(self):
+        """Test Sherpa AI chat endpoint."""
+        res = self.client.post('/api/chat', json={'message': 'What permits are required for Kedarkantha?'})
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertTrue(data['success'])
+        self.assertIn('reply', data)
+        self.assertIn('suggestions', data)
+
+    def test_15_trek_guide_api(self):
+        """Test Trek Guide & Itinerary PDF data endpoint."""
+        res = self.client.get('/api/treks/kedarkantha/guide')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertTrue(data['success'])
+        self.assertIn('trek', data)
+        self.assertEqual(data['trek']['id'], 'kedarkantha')
+        self.assertIn('permits', data)
+        self.assertIn('permits_required', data['permits'])
+        self.assertIn('emergency_sos', data)
+        self.assertIn('helpline_india', data['emergency_sos'])
+
+    def test_16_trek_guide_not_found(self):
+        """Test Trek Guide endpoint with invalid trek id."""
+        res = self.client.get('/api/treks/non-existent-trek-999/guide')
+        self.assertEqual(res.status_code, 404)
+        data = json.loads(res.data)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['error'], 'Trek not found')
+
 if __name__ == '__main__':
     unittest.main()
+
