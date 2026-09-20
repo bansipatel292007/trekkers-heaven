@@ -360,6 +360,47 @@ def treks():
         user = database.get_user_by_id(session['user_id'])
     return render_template('treks.html', treks=treks_data.TREKS_DATA, user=user)
 
+@app.route('/treks/<trek_id>/guide')
+def trek_guide_page(trek_id):
+    """Render a dedicated, print-ready, in-browser Trek Expedition Guide & Itinerary page."""
+    trek = next((t for t in treks_data.TREKS_DATA if t['id'] == trek_id), None)
+    if not trek:
+        flash("Trek not found.", "danger")
+        return redirect(url_for('treks'))
+    
+    permits = gemini_service.PERMITS_DATA.get(trek_id, {
+        'trek_name': trek['name'],
+        'region': f"{trek.get('region', '')}, {trek.get('country', '')}",
+        'permits_required': [
+            'State Forest Department Transit & Camping Permit',
+            'Local Wildlife Sanctuary / Environmental Entry Pass'
+        ],
+        'documents_needed': [
+            'Original Government Photo ID Proof (Aadhaar / Passport / Voter ID) + 2 photocopies',
+            'Medical Fitness Certificate signed by a certified MBBS doctor',
+            'Trekker Disclaimer & Indemnity Undertaking Form'
+        ],
+        'fee_details': 'Approx. ₹150–₹350 per day (Forest & Sanctuary fees)',
+        'issuing_office': f"{trek.get('start_point', 'Basecamp')} Forest Checkpost Gate"
+    })
+    
+    emergency_sos = {
+        'helpline_india': '112 / 1070 (Disaster Management)',
+        'sdrf_uttarakhand': '+91-135-2710334 / 1070',
+        'sdrf_himachal': '+91-177-2812344 / 1070',
+        'jk_rescue': '+91-194-2452138 / 100',
+        'ladakh_rescue': '+91-1982-255588',
+        'nepal_rescue': '+977-1-4247041 (HRA Kathmandu) / 100',
+        'ambulance': '108',
+        'medical_guideline': 'Never ascend with AMS symptoms. Hydrate 4L/day, carry Diamox after medical consult, and inform trek leader immediately.'
+    }
+    
+    user = None
+    if 'user_id' in session:
+        user = database.get_user_by_id(session['user_id'])
+        
+    return render_template('trek_guide.html', trek=trek, permits=permits, emergency_sos=emergency_sos, user=user)
+
 @app.route('/api/treks')
 def api_treks():
     """API endpoint to get all treks dataset for client-side filtering."""

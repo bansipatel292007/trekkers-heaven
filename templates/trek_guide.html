@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ trek.name }} - Official Expedition Guide & Itinerary | Trekkers Heaven</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- html2pdf for high-quality client-side PDF Guide generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Base styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treks.css') }}">
+    <style>
+        :root {
+            --guide-bg: #0b0f19;
+            --guide-card-bg: rgba(18, 24, 38, 0.95);
+            --guide-border: rgba(255, 255, 255, 0.08);
+            --guide-text-primary: #f8fafc;
+            --guide-text-muted: #94a3b8;
+            --guide-accent: #10b981;
+            --guide-accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --guide-indigo: #6366f1;
+        }
+
+        body.guide-page-body {
+            background-color: var(--guide-bg);
+            color: var(--guide-text-primary);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Top Sticky Guide Toolbar */
+        .guide-sticky-toolbar {
+            position: sticky;
+            top: 72px;
+            z-index: 90;
+            background: rgba(11, 15, 25, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--guide-border);
+            padding: 12px 24px;
+        }
+
+        .guide-toolbar-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .guide-toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-toolbar-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--guide-border);
+            border-radius: 8px;
+            color: var(--guide-text-primary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-toolbar-back:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transform: translateX(-2px);
+        }
+
+        .guide-toolbar-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guide-toolbar-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .guide-toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action-print {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #a5b4fc;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action-print:hover {
+            background: #6366f1;
+            color: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-action-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: var(--guide-accent-gradient);
+            border: none;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-action-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-action-share {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--guide-border);
+            border-radius: 8px;
+            color: var(--guide-text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action-share:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Main Document Wrapper */
+        .guide-main-content {
+            flex: 1;
+            max-width: 1040px;
+            width: 100%;
+            margin: 28px auto 60px auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .guide-document-paper {
+            background: var(--guide-card-bg);
+            border: 1px solid var(--guide-border);
+            border-radius: 16px;
+            padding: 40px 48px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        /* Hero Banner inside Document */
+        .guide-hero-block {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .guide-hero-img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .guide-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(11, 15, 25, 0.1) 0%, rgba(11, 15, 25, 0.92) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px 32px;
+        }
+
+        .guide-hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .guide-hero-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-elevation {
+            background: rgba(99, 102, 241, 0.25);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.5);
+        }
+
+        .badge-difficulty {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .badge-region {
+            background: rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .guide-hero-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Quick Specs Grid */
+        .guide-specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .guide-spec-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--guide-border);
+            border-radius: 12px;
+            padding: 16px 14px;
+            text-align: center;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .guide-spec-box:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .spec-icon {
+            font-size: 1.25rem;
+            color: #34d399;
+            margin-bottom: 6px;
+        }
+
+        .spec-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--guide-text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .spec-val {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        /* Section Headings */
+        .guide-section {
+            margin-bottom: 36px;
+        }
+
+        .guide-section-title {
+            font-size: 1.28rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--guide-border);
+        }
+
+        .guide-section-title i {
+            color: #34d399;
+        }
+
+        .guide-narrative {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .highlights-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip-highlight {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Day-Wise Itinerary Table */
+        .itinerary-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--guide-border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .itinerary-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        .itinerary-table th {
+            background: rgba(255, 255, 255, 0.04);
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--guide-border);
+        }
+
+        .itinerary-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: top;
+        }
+
+        .itinerary-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .day-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #a5b4fc;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .stage-title {
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .stage-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .camp-info {
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .alt-info {
+            font-size: 0.78rem;
+            color: #34d399;
+            margin-top: 2px;
+            display: block;
+        }
+
+        /* Two-Column Info Cards */
+        .guide-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .guide-info-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--guide-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .guide-info-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0 0 14px 0;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guide-checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .guide-checklist li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 10px;
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+        }
+
+        .guide-checklist li::before {
+            content: "\f058";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            top: 1px;
+            color: #10b981;
+            font-size: 0.85rem;
+        }
+
+        .card-emergency {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.03);
+        }
+
+        .card-emergency h4 {
+            color: #f87171;
+        }
+
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .sos-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        .sos-label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .sos-number {
+            font-size: 0.88rem;
+            color: #fca5a5;
+            font-weight: 700;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Document Footer Branding */
+        .guide-doc-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--guide-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--guide-text-muted);
+            font-size: 0.82rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .guide-sticky-toolbar {
+                top: 60px;
+                padding: 10px 16px;
+            }
+            .guide-toolbar-inner {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .guide-toolbar-actions {
+                justify-content: space-between;
+            }
+            .guide-document-paper {
+                padding: 24px 18px;
+            }
+            .guide-hero-overlay {
+                padding: 16px;
+            }
+            .guide-hero-title {
+                font-size: 1.5rem;
+            }
+            .guide-columns {
+                grid-template-columns: 1fr;
+            }
+            .emergency-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Print Media Styles (Clean A4 Print Format) */
+        @media print {
+            .trek-navbar,
+            .guide-sticky-toolbar,
+            .btn-action-print,
+            .btn-action-download,
+            .btn-action-share {
+                display: none !important;
+            }
+            body.guide-page-body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+            }
+            .guide-main-content {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .guide-document-paper {
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                color: #0f172a !important;
+            }
+            .guide-hero-overlay {
+                background: rgba(0, 0, 0, 0.4) !important;
+            }
+            .guide-spec-box,
+            .guide-info-card,
+            .itinerary-table-wrap,
+            .sos-item {
+                background: #f8fafc !important;
+                border-color: #cbd5e1 !important;
+                color: #0f172a !important;
+                page-break-inside: avoid;
+            }
+            .spec-val,
+            .stage-title,
+            .camp-info,
+            .guide-section-title,
+            .guide-info-card h4 {
+                color: #0f172a !important;
+            }
+            .guide-narrative,
+            .stage-desc,
+            .guide-checklist li {
+                color: #334155 !important;
+            }
+            .chip-highlight {
+                background: #e2e8f0 !important;
+                color: #1e293b !important;
+                border-color: #cbd5e1 !important;
+            }
+            .itinerary-table th {
+                background: #e2e8f0 !important;
+                color: #334155 !important;
+            }
+            .itinerary-table td {
+                border-color: #e2e8f0 !important;
+                color: #0f172a !important;
+            }
+            .sos-number {
+                color: #b91c1c !important;
+            }
+            .guide-doc-footer {
+                color: #64748b !important;
+                border-color: #cbd5e1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="guide-page-body">
+
+    <!-- Top Navigation Bar -->
+    <nav class="trek-navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('treks') }}" class="nav-brand">
+                <span class="logo-icon"><i class="fa-solid fa-mountain-sun"></i></span>
+                <span class="logo-text">TREKKERS<span>HEAVEN</span></span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('treks') }}" class="nav-link">Explore Treks</a>
+                <a href="{{ url_for('treks') }}#himalayas" class="nav-link">Uttarakhand</a>
+                <a href="{{ url_for('treks') }}#himachal" class="nav-link">Himachal</a>
+                <a href="{{ url_for('treks') }}#nepal" class="nav-link">Nepal</a>
+            </div>
+
+            <div class="nav-auth-actions">
+                {% if user %}
+                    <a href="{{ url_for('dashboard') }}" class="btn-profile-circle" title="{{ user.name }}">
+                        <span class="user-avatar-circle">{{ user.name[:1].upper() }}</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-nav-login-top">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sticky Guide Toolbar -->
+    <div class="guide-sticky-toolbar">
+        <div class="guide-toolbar-inner">
+            <div class="guide-toolbar-left">
+                <a href="{{ url_for('treks') }}" class="btn-toolbar-back">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Treks
+                </a>
+                <div class="guide-toolbar-title">
+                    <span>{{ trek.name }}</span>
+                    <span class="guide-toolbar-badge">OFFICIAL ITINERARY</span>
+                </div>
+            </div>
+            <div class="guide-toolbar-actions">
+                <button type="button" class="btn-action-print" onclick="window.print()" title="Print this Guide (Ctrl + P)">
+                    <i class="fa-solid fa-print"></i> Print Guide
+                </button>
+                <button type="button" class="btn-action-download" id="btnPageDownloadPdf" onclick="downloadCurrentPagePdf()" title="Download as A4 PDF">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF
+                </button>
+                <button type="button" class="btn-action-share" onclick="copyGuideUrl()" title="Copy Shareable Link">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Guide Document Container -->
+    <main class="guide-main-content">
+        <div class="guide-document-paper" id="printableGuidePaper">
+            
+            <!-- Hero Banner -->
+            <div class="guide-hero-block">
+                <img src="{{ trek.image or url_for('static', filename='img/himalayas.jpg') }}" alt="{{ trek.name }}" class="guide-hero-img">
+                <div class="guide-hero-overlay">
+                    <div class="guide-hero-meta">
+                        <span class="guide-hero-badge badge-elevation"><i class="fa-solid fa-mountain"></i> {{ trek.max_altitude_text or trek.max_altitude_ft ~ ' ft' }}</span>
+                        <span class="guide-hero-badge badge-difficulty"><i class="fa-solid fa-gauge-high"></i> {{ trek.difficulty }}</span>
+                        <span class="guide-hero-badge badge-region"><i class="fa-solid fa-location-dot"></i> {{ trek.state or trek.region }}</span>
+                    </div>
+                    <h1 class="guide-hero-title">{{ trek.name }}</h1>
+                </div>
+            </div>
+
+            <!-- Specs Grid -->
+            <div class="guide-specs-grid">
+                <div class="guide-spec-box">
+                    <div class="spec-icon"><i class="fa-solid fa-mountain"></i></div>
+                    <div class="spec-label">Max Elevation</div>
+                    <div class="spec-val">{{ trek.max_altitude_text or trek.max_altitude_ft ~ ' ft' }}</div>
+                </div>
+                <div class="guide-spec-box">
+                    <div class="spec-icon"><i class="fa-solid fa-route"></i></div>
+                    <div class="spec-label">Trek Distance</div>
+                    <div class="spec-val">{{ trek.distance_km }} km</div>
+                </div>
+                <div class="guide-spec-box">
+                    <div class="spec-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="spec-label">Duration</div>
+                    <div class="spec-val">{{ trek.duration_text or trek.duration_days ~ ' Days' }}</div>
+                </div>
+                <div class="guide-spec-box">
+                    <div class="spec-icon"><i class="fa-solid fa-campground"></i></div>
+                    <div class="spec-label">Basecamp</div>
+                    <div class="spec-val">{{ trek.start_point or 'Mountain Base' }}</div>
+                </div>
+                <div class="guide-spec-box">
+                    <div class="spec-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="spec-label">Best Season</div>
+                    <div class="spec-val">{{ trek.best_season or 'Round Year' }}</div>
+                </div>
+                <div class="guide-spec-box">
+                    <div class="spec-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div class="spec-label">Fitness Level</div>
+                    <div class="spec-val">{{ trek.fitness_level or 'Moderate' }}</div>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <section class="guide-section">
+                <h2 class="guide-section-title"><i class="fa-solid fa-compass"></i> Expedition Narrative</h2>
+                <p class="guide-narrative">{{ trek.description }}</p>
+                {% if trek.highlights %}
+                    <div class="highlights-chips">
+                        {% for h in trek.highlights %}
+                            <span class="chip-highlight"><i class="fa-solid fa-star" style="color: #f59e0b; margin-right: 4px;"></i> {{ h }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+
+            <!-- Day-Wise Itinerary -->
+            <section class="guide-section">
+                <h2 class="guide-section-title"><i class="fa-solid fa-calendar-check"></i> Day-by-Day Expedition Trail Itinerary</h2>
+                <div class="itinerary-table-wrap">
+                    <table class="itinerary-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Day</th>
+                                <th>Stage & Trail Description</th>
+                                <th style="width: 170px;">Campsite & Elevation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if trek.itinerary %}
+                                {% for day_item in trek.itinerary %}
+                                    <tr>
+                                        <td>
+                                            <span class="day-badge">DAY {{ day_item.day }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="stage-title">{{ day_item.title }}</div>
+                                            <div class="stage-desc">{{ day_item.desc }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="camp-info"><i class="fa-solid fa-tent"></i> {{ day_item.campsite }}</div>
+                                            <span class="alt-info"><i class="fa-solid fa-arrow-trend-up"></i> {{ day_item.altitude }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #94a3b8; padding: 20px;">
+                                        Standard guided high-altitude route. Daily briefings provided by Certified Mountain Leads.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Permits & Required Documents -->
+            <div class="guide-columns">
+                <div class="guide-info-card">
+                    <h4><i class="fa-solid fa-shield-halved" style="color: #34d399;"></i> Permits & Regulations</h4>
+                    <ul class="guide-checklist">
+                        {% if permits and permits.permits_required %}
+                            {% for p in permits.permits_required %}
+                                <li>{{ p }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li>State Forest Department Transit & Camping Permit</li>
+                            <li>Local Wildlife Sanctuary / Environmental Entry Pass</li>
+                        {% endif %}
+                    </ul>
+                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.82rem; color: #94a3b8;">
+                        <strong>Checkpost:</strong> {{ permits.issuing_office if permits else 'Basecamp Forest Checkpost' }}<br>
+                        <strong>Fee:</strong> {{ permits.fee_details if permits else 'Included in Expedition Pass' }}
+                    </div>
+                </div>
+
+                <div class="guide-info-card">
+                    <h4><i class="fa-solid fa-id-card" style="color: #60a5fa;"></i> Mandatory Documents</h4>
+                    <ul class="guide-checklist">
+                        {% if permits and permits.documents_needed %}
+                            {% for d in permits.documents_needed %}
+                                <li>{{ d }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li>Original Government Photo ID Proof (Aadhaar / Passport) + 2 photocopies</li>
+                            <li>Medical Fitness Certificate signed by an MBBS doctor (within 30 days)</li>
+                            <li>Trekker Indemnity & Safety Undertaking Form</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Packing & Altitude Safety Protocol -->
+            <section class="guide-section" style="margin-top: 24px;">
+                <div class="guide-columns">
+                    <div class="guide-info-card">
+                        <h4><i class="fa-solid fa-vest" style="color: #f59e0b;"></i> Essential 3-Layer Packing System</h4>
+                        <ul class="guide-checklist">
+                            <li><strong>Base Layer:</strong> 2x Merino wool / thermal synthetic moisture-wicking tops & bottoms.</li>
+                            <li><strong>Insulation Layer:</strong> 1x Heavy Fleece jacket + 1x Down feather jacket (-10°C rated).</li>
+                            <li><strong>Outer Shell:</strong> Waterproof Gore-Tex hooded jacket & windproof trekking pants.</li>
+                            <li><strong>Footwear:</strong> High-ankle waterproof trekking shoes (Vibram sole) + 4x wool socks.</li>
+                            <li><strong>Gear:</strong> 50–60L Backpack with rain cover, UV400 Polarized sunglasses, Headlamp with extra batteries.</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-info-card card-emergency">
+                        <h4><i class="fa-solid fa-truck-medical"></i> Mountain Safety & 24x7 SOS Directory</h4>
+                        <p style="font-size: 0.84rem; color: #cbd5e1; margin-bottom: 12px; line-height: 1.45;">
+                            <strong>AMS Protocol:</strong> Hydrate with 4L water daily. Never ascend with headache or nausea. Inform Expedition Lead immediately.
+                        </p>
+                        <div class="emergency-grid">
+                            <div class="sos-item">
+                                <span class="sos-label">National Disaster SOS</span>
+                                <span class="sos-number">112 / 1070</span>
+                            </div>
+                            <div class="sos-item">
+                                <span class="sos-label">SDRF Uttarakhand</span>
+                                <span class="sos-number">0135-2710334</span>
+                            </div>
+                            <div class="sos-item">
+                                <span class="sos-label">SDRF Himachal</span>
+                                <span class="sos-number">0177-2812344</span>
+                            </div>
+                            <div class="sos-item">
+                                <span class="sos-label">Ambulance SOS</span>
+                                <span class="sos-number">108</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Document Footer -->
+            <div class="guide-doc-footer">
+                <div>
+                    <strong>Trekkers Heaven</strong> • Official Expedition Field Guide
+                </div>
+                <div>
+                    Leave No Trace • Respect Himalayan Ecology • Safety First
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Client-side PDF & share script -->
+    <script>
+        async function downloadCurrentPagePdf() {
+            const btn = document.getElementById('btnPageDownloadPdf');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+
+            try {
+                const element = document.getElementById('printableGuidePaper');
+                const safeName = "{{ trek.name }}".replace(/[^a-zA-Z0-9]/g, '_');
+                
+                if (typeof html2pdf === 'function') {
+                    const opt = {
+                        margin:       [8, 8, 8, 8],
+                        filename:     `TrekkersHeaven_${safeName}_Expedition_Guide.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                    };
+                    await html2pdf().set(opt).from(element).save();
+                } else {
+                    window.print();
+                }
+            } catch (err) {
+                console.error('PDF export failed:', err);
+                window.print();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+
+        function copyGuideUrl() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Guide link copied to clipboard! 🏔️');
+            }).catch(() => {
+                prompt('Copy link:', window.location.href);
+            });
+        }
+    </script>
+</body>
+</html>

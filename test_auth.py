@@ -237,6 +237,14 @@ class AuthTestCase(unittest.TestCase):
         self.assertFalse(data['success'])
         self.assertEqual(data['error'], 'Trek not found')
 
+    def test_17_trek_guide_webpage(self):
+        """Test rendered HTML trek guide webpage."""
+        res = self.client.get('/treks/kedarkantha/guide')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'Kedarkantha Trek', res.data)
+        self.assertIn(b'Expedition Narrative', res.data)
+        self.assertIn(b'Essential 3-Layer Packing System', res.data)
+
 if __name__ == '__main__':
     unittest.main()
 

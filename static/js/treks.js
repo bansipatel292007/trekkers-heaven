@@ -625,6 +625,9 @@ function openTrekModal(trekId) {
                 </div>
             </div>
             <div class="modal-action-btns">
+                <a href="/treks/${trek.id}/guide" target="_blank" class="btn-modal-view-guide" title="View Official Expedition Guide & Itinerary in Browser">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> View Guide
+                </a>
                 <button type="button" class="btn-modal-download-pdf" id="btnDownloadPdf-${trek.id}" onclick="downloadTrekPdfGuide('${trek.id}', event)" title="Download Complete PDF Guide & Itinerary">
                     <i class="fa-solid fa-file-pdf"></i> Download PDF Guide
                 </button>
