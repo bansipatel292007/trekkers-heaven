@@ -16,7 +16,7 @@
     <!-- html2pdf for high-quality client-side PDF Guide generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Trek Explorer CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/treks.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treks.css') }}?v=2.2">
 </head>
 <body>
     <!-- Top Navigation Bar -->
@@ -552,6 +552,6 @@
     <script>
         const INITIAL_TREKS_DATA = {{ treks|tojson }};
     </script>
-    <script src="{{ url_for('static', filename='js/treks.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/treks.js') }}?v=2.2"></script>
 </body>
 </html>

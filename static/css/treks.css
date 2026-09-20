@@ -3087,40 +3087,47 @@ body {
     background: linear-gradient(135deg, #8b5cf6 0%, #7c5cfc 100%);
     box-shadow: 0 6px 22px rgba(124, 92, 252, 0.6);
     transform: translateY(-2px);
+}
+
 .btn-modal-view-guide {
     height: 44px;
     padding: 0 18px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(79, 70, 229, 0.28) 100%);
-    border: 1px solid rgba(99, 102, 241, 0.55);
-    border-radius: var(--radius-md);
-    color: #a5b4fc;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(79, 70, 229, 0.35) 100%);
+    border: 1px solid rgba(129, 140, 248, 0.55);
+    border-radius: 12px;
+    color: #c7d2fe;
     font-size: 0.88rem;
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: none !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.22);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 
 .btn-modal-view-guide:hover {
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    color: #ffffff;
-    border-color: #6366f1;
-    box-shadow: 0 6px 22px rgba(99, 102, 241, 0.55);
+    color: #ffffff !important;
+    border-color: #818cf8;
+    box-shadow: 0 6px 22px rgba(99, 102, 241, 0.6);
     transform: translateY(-2px);
+    text-decoration: none !important;
+}
+
+.btn-modal-view-guide:active {
+    transform: scale(0.97);
 }
 
 .btn-modal-download-pdf {
     height: 44px;
-    padding: 0 20px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.28) 100%);
-    border: 1px solid rgba(16, 185, 129, 0.55);
-    border-radius: var(--radius-md);
-    color: #34d399;
+    padding: 0 18px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.35) 100%);
+    border: 1px solid rgba(52, 211, 153, 0.55);
+    border-radius: 12px;
+    color: #6ee7b7;
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
@@ -3128,7 +3135,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.22);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
@@ -3136,8 +3143,8 @@ body {
 .btn-modal-download-pdf:hover {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: #ffffff;
-    border-color: #10b981;
-    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55);
+    border-color: #34d399;
+    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.6);
     transform: translateY(-2px);
 }
 
